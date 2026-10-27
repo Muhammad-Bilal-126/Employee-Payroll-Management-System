@@ -2,16 +2,17 @@
 #include<string.h>
 /*
 functions list:
-1) aik functions sarri details ko user se input lene ke liye
-2) aik function add employee record ke liye jisme woh file open ho, input lene ka function call ho, woh data file mein append ho (append karna hai write nhi) 
-   aur file save hokar close hogaye with data validation
-3) Aik function employee ko search karne ka based on employee id
-4) Aik function sarre employees ko display karne ke liye
-5) Aik function kisi particular employee ka record delete karne ke liye based on employee id
-6) Aik function payslip generate karne ke liye
-7) Aik function kisi particular employee ka record update karne ke liye, jis employee ka record update karna hoga user iski id dega
-8) Exit ka code direct main mein likh deingy
-Iske illawa kuch add karna ho toh tuesday ko lab ke baad discuss karleingy 
+1) aik functions sarri details ko user se input lene ke liye --> Shehryar
+2) aik function add employee record ke liye jisme woh file open ho, 
+   input lene ka function call ho, woh data file mein append ho (append karna hai write nhi) 
+   aur file save hokar close hogaye with data validation --> Shehryar
+3) Aik function employee ko search karne ka based on employee id ---> Bilal
+4) Aik function sarre employees ko display karne ke liye ---> Qaim
+5) Aik function kisi particular employee ka record delete karne ke liye based on employee id --->Amin
+6) Aik function payslip generate karne ke liye --->Qaim
+7) Aik function kisi particular employee ka record update karne ke liye, 
+jis employee ka record update karna hoga user iski id dega --> Amin
+8) Exit ka code direct main mein likh deingy ---> Qaim
 */
 #define Max_Employee 100
 typedef struct{
@@ -21,6 +22,7 @@ typedef struct{
     char department[100];
     char email[100];
     char date_joining[10];
+    
     char bank_account[50];
     float basic_salary;
     float allowance;
@@ -33,6 +35,7 @@ int main(){
     Employee emp[Max_Employee];
     int employee_count=0;
     int option;
+    do {
     printf("%110s\n","=== Employee Payroll Management System ===");
     printf("\n%70s\n","1-Add a new employee");
     printf("\n%80s\n","2-Display all employee records");
@@ -41,45 +44,44 @@ int main(){
     printf("\n%81s\n","5-Search for an employee record");
     printf("\n%84s\n","6-Generate payslip for an employee");
     printf("\n%83s\n","7-Exit from the management system");
-
     printf("\n%81s","Which Option Do You Want to Choose: ");
     scanf("%d",&option);
     //Add login ability then show menu
-    while(1)
-    {   
-        if(!(option>=1 && option <= 7))
+    switch (option)
+    {
+        case (1): //Add a new employee's record
         {
-        printf("\nInvalid Input. Try Again\n");
-        continue;
+          break;
         }
-        else if(option == 1) //Add a new employee's record
+        case (2): //Display all employee records
         {
-
+         break;
         }
-        else if(option == 2) //Display all employee records
+        case (3): //Update an employee's record
         {
-
+          break;
         }
-        else if(option == 3) //Update an employee's record
+        case (4): //Delete an employee's record
         {
-
+         break;
         }
-        else if(option == 4) //Delete an employee's record
+        case (5): //Search for a particular employee
         {
-
+          break;
         }
-        else if(option == 5) //Search for a particular employee
-        {
-
+        case (6): //Generate a payslip for a particular employee 
+        {  
+          break;
         }
-        else if(option == 6) //Generate a payslip for a particular employee 
+        case (7): //Exit from management system
         {
-
-        }
-        else if(option == 7) //Exit from management system
-        {
+            printf("\n Exiting From Management System Program");
             break;
         }
+        default:
+           printf("\n Invalid Input");
     }
+}while(option!=7);
+
     return 0;
 }
