@@ -1,67 +1,110 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include<stdio.h>
+#include<string.h>
+/*
+functions list:
+1) aik functions sarri details ko user se input lene ke liye
+2) aik function add employee record ke liye jisme woh file open ho, input lene ka function call ho, woh data file mein append ho (append karna hai write nhi) 
+   aur file save hokar close hogaye with data validation
+3) Aik function employee ko search karne ka based on employee id
+4) Aik function sarre employees ko display karne ke liye
+5) Aik function kisi particular employee ka record delete karne ke liye based on employee id
+6) Aik function payslip generate karne ke liye
+7) Aik function kisi particular employee ka record update karne ke liye, jis employee ka record update karna hoga user iski id dega
+8) Exit ka code direct main mein likh deingy
+Iske illawa kuch add karna ho toh tuesday ko lab ke baad discuss karleingy 
+*/
+#define Max_Employee 100
+typedef struct{
+    char name[100];
+    char id[20];
+    char designation[100];
+    char department[100];
+    char email[100];
+    char date_joining[10];
+    float experience;
+    char bank_name[50];
+    char bank_account[50];
+    float basic_salary;
+    float allowance;
+    float overtime_pay;
+    float bonuses;
+    float taxes;
+    float net_salary;
+}Employee;
+int main(){
+    Employee emp[Max_Employee];
+    int employee_count=0;
+    int option;
+    printf("%110s\n","=== Employee Payroll Management System ===");
+    printf("\n%70s\n","1-Add a new employee");
+    printf("\n%80s\n","2-Display all employee records");
+    printf("\n%79s\n","3-Update an employee's record");
+    printf("\n%77s\n","4-Delete an employee record");
+    printf("\n%81s\n","5-Search for an employee record");
+    printf("\n%84s\n","6-Generate payslip for an employee");
+    printf("\n%83s\n","7-Exit from the management system");
 
-#define MAX_EMP 100
-#define FILENAME "payroll.txt"
-
-// 1. STRUCTURE - Covers Criterion 2 (Structure)
-struct Employee {
-    int id;
-    char name[50];
-    char department[30];
-    char designation[30];
-    float basicSalary;
-    float houseAllowance;
-    float medicalAllowance;
-    float tax;
-    float netSalary; // Calculated field
-};
-
-struct Employee emp[MAX_EMP];
-int count = 0;
-
-// Function Prototypes - Modular Design (Criterion 1)
-void addEmployee();
-void displayAll();
-void searchEmployee();
-void updateEmployee();
-void deleteEmployee();
-void saveToFile();
-void loadFromFile();
-void generateReport();
-void calculateSalary(struct Employee *e); // Pointer usage
-void clearInput();
-
-int main() {
-    int choice;
-    loadFromFile(); // Load data on start
-
-    while(1) {
-        printf("\n===== EMPLOYEE PAYROLL SYSTEM =====\n");
-        printf("1. Add Employee\n");
-        printf("2. Display All Employees\n");
-        printf("3. Search Employee\n");
-        printf("4. Update Employee\n");
-        printf("5. Delete Employee\n");
-        printf("6. Generate Salary Report (Sort by Net Salary)\n");
-        printf("7. Save & Exit\n");
-        printf("Enter choice: ");
-        if(scanf("%d", &choice) != 1) {
-            printf("Invalid input! Numbers only.\n");
-            clearInput();
-            continue;
+    printf("\n%81s","Which Option Do You Want to Choose: ");
+    scanf("%d",&option);
+    //Add login ability then show menu
+    while(1)
+    {   
+        if(!(option>=1 && option <= 7))
+        {
+        printf("\nInvalid Input. Try Again\n");
+        continue;
         }
+        else if(option == 1) //Add a new employee's record
+        {
 
-        switch(choice) {
-            case 1: addEmployee(); break;
-            case 2: displayAll(); break;
-            case 3: searchEmployee(); break;
-            case 4: updateEmployee(); break;
-            case 5: deleteEmployee(); break;
-            case 6: generateReport(); break;
-            case 7: saveToFile(); printf("Data saved. Goodbye!\n"); return 0;
-            default: printf("Invalid choice. Try again.\n");
+        }
+        else if(option == 2) //Display all employee records
+        {
+
+        }
+        else if(option == 3) //Update an employee's record
+        {
+
+        }
+        else if(option == 4) //Delete an employee's record
+        {
+
+        }
+        else if(option == 5) //Search for a particular employee
+        {
+
+        }
+        else if(option == 6) //Generate a payslip for a particular employee 
+        {
+
+        }
+        else if(option == 7) //Exit from management system
+        {
+            break;
         }
     }
+    return 0;
+}
+
+
+
+void input(void)
+{
+    printf("Enter The Following Detail\n");
+    printf("Name:");
+    printf("\nID:");
+    printf("\nRole:");
+    printf("\nDepartment:");
+    printf("\nEmail:");
+    printf("\nJoining Date:");
+    printf("\nExperience:");
+    printf("\nBank Name:");
+    printf("\nBank Account");
+    printf("\nBasic Salary:");
+    printf("\nAllowance:");
+    printf("\nOvertime Pay:");
+    printf("\nBonus:");
+    printf("\nTaxes:");
+
+
 }
