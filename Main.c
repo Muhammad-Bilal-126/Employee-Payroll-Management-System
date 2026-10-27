@@ -17,10 +17,12 @@ Iske illawa kuch add karna ho toh tuesday ko lab ke baad discuss karleingy
 typedef struct{
     char name[100];
     char id[20];
-    char role[100];
+    char designation[100];
     char department[100];
     char email[100];
     char date_joining[10];
+    float experience;
+    char bank_name[50];
     char bank_account[50];
     float basic_salary;
     float allowance;
@@ -82,4 +84,27 @@ int main(){
         }
     }
     return 0;
+}
+
+
+
+void input(void)
+{
+    printf("Enter The Following Detail\n");
+    printf("Name:");
+    printf("\nID:");
+    printf("\nRole:");
+    printf("\nDepartment:");
+    printf("\nEmail:");
+    printf("\nJoining Date:");
+    printf("\nExperience:");
+    printf("\nBank Name:");
+    printf("\nBank Account");
+    printf("\nBasic Salary:");
+    printf("\nAllowance:");
+    printf("\nOvertime Pay:");
+    printf("\nBonus:");
+    printf("\nTaxes:");
+
+
 }
