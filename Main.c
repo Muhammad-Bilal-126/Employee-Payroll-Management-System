@@ -24,7 +24,6 @@ typedef struct{
     char date_joining[10];
     float experience;
     char bank_name[50];
-    
     char bank_account[50];
     float basic_salary;
     float allowance;
