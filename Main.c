@@ -59,6 +59,7 @@ int main(){
         {
           if (employee_count < Max_Employee){
             input(emp, employee_count);
+            employee_count ++;
             break;
           }
           else{
