@@ -72,6 +72,11 @@ int main(){
         }
         else if(option == 5) //Search for a particular employee
         {
+            char employid[20];
+            printf("Enter the employ id to search\n");
+            scanf("%s",employid[]);
+            search(employid[])
+
 
         }
         else if(option == 6) //Generate a payslip for a particular employee 
@@ -108,11 +113,8 @@ void input(void)
 
 
 }
-int search(void)
+int search(char employid[])
 {
-    char employid[20];
-    printf("Enter the employ id to search\n");
-    scanf("%s",employid[]);
     int i;
     for (i=0; i < employee_count; i++)
     {
