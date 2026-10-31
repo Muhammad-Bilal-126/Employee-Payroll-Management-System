@@ -108,3 +108,40 @@ void input(void)
 
 
 }
+int search(Employee emp[], char employid[])
+{
+    int i;
+    for (i=0; i < employee_count; i++)
+    {
+         if( strcmp( emp[i].id, employid) == 0)
+         {
+            display(i);
+            return i;
+         }
+         else
+         {
+            printf("Wrong ID Data Not Found\n");
+            return -1;
+         }
+    }
+}
+
+void display(int i)
+{
+    
+        printf("Name:%s",emp[i].name);
+        printf("\nID:%s",emp[i].id);
+        printf("\nDesignation:%s",emp[i].designation);
+        printf("\nDepartment:%s",emp[i].department);
+        printf("\nEmail:%s",emp[i].email);
+        printf("\nJoining Date:%s",emp[i].date_joining);
+        printf("\nExperience:%f",emp[i].experience);
+        printf("\nBank Name:%s",emp[i].bank_name);
+        printf("\nBank Account:%s",emp[i].bank_account);
+        printf("\nBasic Salary:%f",emp[i].basic_salary);
+        printf("\nAllowance:%f",emp[i].allowance);
+        printf("\nOvertime Pay:%f",emp[i].overtime_pay);
+        printf("\nBonus:%f",emp[i].bonus);
+        printf("\nTaxes:%f",emp[i].taxes);
+        printf("Final Salary:%f",emp[i].net_salary);
+}
