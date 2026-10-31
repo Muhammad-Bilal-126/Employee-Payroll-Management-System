@@ -108,8 +108,11 @@ void input(void)
 
 
 }
-int search(Employee emp[], char employid[])
+int search(void)
 {
+    char employid[20];
+    printf("Enter the employ id to search\n");
+    scanf("%s",employid[]);
     int i;
     for (i=0; i < employee_count; i++)
     {
