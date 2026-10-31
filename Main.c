@@ -68,6 +68,10 @@ int main(){
         }
         case (5): //Search for a particular employee
         {
+            char employid[20];
+            printf("Enter the employ id to search\n");
+            scanf("%s",employid[]);
+            search(employid[]);
           break;
         }
         case (6): //Generate a payslip for a particular employee 
@@ -109,7 +113,7 @@ void input(void)
 
 
 }
-int search(Employee emp[], char employid[])
+int search(char employid[])
 {
     int i;
     for (i=0; i < employee_count; i++)
