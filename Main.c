@@ -32,9 +32,14 @@ typedef struct{
     float taxes;
     float net_salary;
 }Employee;
-int main(){
     Employee emp[Max_Employee];
     int employee_count=0;
+    int search(char arr[]);
+    void display(int i);
+    void updateEmployee(void);
+   void deleteEmployee(void);
+
+int main(){
     int option;
     do {
     printf("%110s\n","=== Employee Payroll Management System ===");
@@ -60,14 +65,20 @@ int main(){
         }
         case (3): //Update an employee's record
         {
+             updateEmployee();
           break;
         }
         case (4): //Delete an employee's record
         {
+            deleteEmployee();
          break;
         }
         case (5): //Search for a particular employee
         {
+            char employid[20];
+            printf("Enter the employ id to search\n");
+            scanf("%s",employid);
+            search(employid);
           break;
         }
         case (6): //Generate a payslip for a particular employee 
@@ -109,7 +120,7 @@ void input(void)
 
 
 }
-int search(Employee emp[], char employid[])
+ int search(char employid[])
 {
     int i;
     for (i=0; i < employee_count; i++)
@@ -142,7 +153,110 @@ void display(int i)
         printf("\nBasic Salary:%f",emp[i].basic_salary);
         printf("\nAllowance:%f",emp[i].allowance);
         printf("\nOvertime Pay:%f",emp[i].overtime_pay);
-        printf("\nBonus:%f",emp[i].bonus);
+        printf("\nBonus:%f",emp[i].bonuses);
         printf("\nTaxes:%f",emp[i].taxes);
         printf("Final Salary:%f",emp[i].net_salary);
+}
+
+void deleteEmployee(void) {
+    char delete_id[20];
+    int index = -1;
+    printf("Enter employee ID to delete: ");
+    scanf("%19s", delete_id);
+    while (getchar() != '\n'); 
+
+    index = search(delete_id); 
+
+    if (index == -1) {
+        printf("Employee not found. Deletion Cancelled.\n");
+        return;
+    }
+    char confirm;
+    printf("\nAre you sure you want to permanently delete this employee? (y/n): ");
+    scanf(" %c", &confirm);
+    if (confirm != 'y' && confirm != 'Y') {
+        printf("Deletion cancelled.\n");
+        return;
+    }
+
+    for (int i = index; i < employee_count - 1; i++) {
+        emp[i] = emp[i + 1];
+    }
+
+    employee_count--;
+    saveData(); 
+    printf("Employee deleted successfully.\n");
+}
+
+void updateEmployee(void) {
+    char search_id[20];
+    int index = -1;
+    int choice;
+
+    printf("Enter employee ID to update: ");
+    scanf("%19s", search_id);
+    while (getchar() != '\n');
+
+    index = search(search_id);
+
+    if (index == -1) {
+        printf("Employee not found. Updation Cancelled.\n");
+        return;
+    }
+do {
+    printf("\n=== Update Fields for %s ===", emp[index].name);
+    printf("\n1. Update Designation");
+    printf("\n2. Update Department");
+    printf("\n3. Update Email");
+    printf("\n4. Update Experience (Years)");
+    printf("\n5. Update Basic Salary");
+    printf("\nChoose a field to update (1-5) press '0' to exit: ");
+    scanf("%d", &choice);
+    while (getchar() != '\n');
+
+    switch (choice) {
+        case 1:
+        {
+            printf("Enter new Designation: ");
+            scanf("%99[^\n]", emp[index].designation);
+            saveData();
+            printf("Designation updated and saved successfully!\n");
+            break; }
+        case 2:
+        {
+            printf("Enter new Department: ");
+            scanf("%99[^\n]", emp[index].department);
+            saveData();
+            printf("Department updated and saved successfully!\n");
+            break; }
+        case 3:
+        {
+            printf("Enter new Email: ");
+            scanf("%99s", emp[index].email);
+            saveData();
+            printf("Email updated and saved successfully!\n");
+            break; }
+        case 4:
+        {
+            printf("Enter updated Experience (years): ");
+            scanf("%f", &emp[index].experience);
+            saveData();
+            printf("Experience updated and saved successfully!\n");
+            break; }
+        case 5:
+        {
+            printf("Enter new Basic Salary: ");
+            scanf("%f", &emp[index].basic_salary);
+            emp[index].net_salary = emp[index].basic_salary + emp[index].allowance + emp[index].bonuses + emp[index].overtime_pay - emp[index].taxes;
+            saveData();
+            printf("Salary updated and saved successfully!\n");
+            break; }
+            case 0:
+            {
+            printf("Exiting Update Menu");
+            break; }
+        default:
+            printf("Invalid choice! No changes were made.\n");
+    }
+}while(choice!= 0);
 }
