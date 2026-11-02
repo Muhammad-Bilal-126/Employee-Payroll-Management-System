@@ -32,94 +32,143 @@ typedef struct{
     float taxes;
     float net_salary;
 }Employee;
+
     Employee emp[Max_Employee];
     int employee_count=0;
     int search(char arr[]);
     void display(int i);
     void updateEmployee(void);
-   void deleteEmployee(void);
+    void deleteEmployee(void);
+
+    void input();
+    void add_employee ();
 
 int main(){
     int option;
     do {
-    printf("%110s\n","=== Employee Payroll Management System ===");
-    printf("\n%70s\n","1-Add a new employee");
-    printf("\n%80s\n","2-Display all employee records");
-    printf("\n%79s\n","3-Update an employee's record");
-    printf("\n%77s\n","4-Delete an employee record");
-    printf("\n%81s\n","5-Search for an employee record");
-    printf("\n%84s\n","6-Generate payslip for an employee");
-    printf("\n%83s\n","7-Exit from the management system");
-    printf("\n%81s","Which Option Do You Want to Choose: ");
-    scanf("%d",&option);
-    //Add login ability then show menu
-    switch (option)
-    {
-        case (1): //Add a new employee's record
+        
+        printf("%110s\n","=== Employee Payroll Management System ===");
+        printf("\n%70s\n","1-Add a new employee");
+        printf("\n%80s\n","2-Display all employee records");
+        printf("\n%79s\n","3-Update an employee's record");
+        printf("\n%77s\n","4-Delete an employee record");
+        printf("\n%81s\n","5-Search for an employee record");
+        printf("\n%84s\n","6-Generate payslip for an employee");
+        printf("\n%83s\n","7-Exit from the management system");
+        printf("\n%81s","Which Option Do You Want to Choose: ");
+        scanf("%d",&option);
+        //Add login ability then show menu
+        switch (option)
         {
-          break;
+            case (1): //Add a new employee's record
+            {
+                add_employee ();
+                break;
+            }
+            case (2): //Display all employee records
+            {
+                break;
+            }
+            case (3): //Update an employee's record
+            {
+                updateEmployee();
+                break;
+            }
+            case (4): //Delete an employee's record
+            {
+                deleteEmployee();
+                break;
+            }
+            case (5): //Search for a particular employee
+            {
+                char employid[20];
+                printf("Enter the employ id to search\n");
+                scanf("%s",employid);
+                search(employid);
+                break;
+            }
+            case (6): //Generate a payslip for a particular employee 
+            {  
+                break;
+            }
+            case (7): //Exit from management system
+            {
+                printf("\n Exiting From Management System Program");
+                break;
+            }
+            default:
+            printf("\n Invalid Input");
         }
-        case (2): //Display all employee records
-        {
-         break;
-        }
-        case (3): //Update an employee's record
-        {
-             updateEmployee();
-          break;
-        }
-        case (4): //Delete an employee's record
-        {
-            deleteEmployee();
-         break;
-        }
-        case (5): //Search for a particular employee
-        {
-            char employid[20];
-            printf("Enter the employ id to search\n");
-            scanf("%s",employid);
-            search(employid);
-          break;
-        }
-        case (6): //Generate a payslip for a particular employee 
-        {  
-          break;
-        }
-        case (7): //Exit from management system
-        {
-            printf("\n Exiting From Management System Program");
-            break;
-        }
-        default:
-           printf("\n Invalid Input");
-    }
-}while(option!=7);
-
+        
+    }while(option!=7);
+    
     return 0;
 }
 
-
-
-void input(void)
-{
-    printf("Enter The Following Detail\n");
-    printf("Name:");
-    printf("\nID:");
-    printf("\nRole:");
-    printf("\nDepartment:");
-    printf("\nEmail:");
-    printf("\nJoining Date:");
-    printf("\nExperience:");
-    printf("\nBank Name:");
-    printf("\nBank Account");
-    printf("\nBasic Salary:");
-    printf("\nAllowance:");
-    printf("\nOvertime Pay:");
-    printf("\nBonus:");
-    printf("\nTaxes:");
-
+void input(){
+    printf("Enter The Details as prompted\n");
+    printf("Name: ");
+    scanf(" %99[^\n]", emp[employee_count].name);                 // %99 means it will take max 99 chracters in a single input, which is last index of name array.
+    printf("\nID: ");                                     // [^\n] tells scanf to read spaxces also, until enter is pressed.
+    scanf(" %19[^\n]", emp[employee_count].id);                   // " %99[^\n] a space is given so that input buffer soesn't have \n by any chance; otherwise it would endthis scanf statement immediatrely.  "
+    printf("\nDesignation: ");                            // note that input buffer may have \n due to 'enter' pressed while taking option input., which is then left in the input buffer
+    scanf(" %99[^\n]",emp[employee_count].designation);           // and when scanf functon runs, it reads the input buffer which has \n, it ends immediately.           
+    printf("\nDepartment: ");
+    scanf(" %99[^\n]",emp[employee_count].department);
+    printf("\nEmail: ");
+    scanf(" %99[^\n]",emp[employee_count].email);
+    printf("\nJoining Date: ");
+    scanf(" %9[^\n]",emp[employee_count].date_joining);
+    printf("\nExperience: ");
+    scanf(" %f",&emp[employee_count].experience);
+    printf("\nBank Name: ");
+    scanf(" %49[^\n]",emp[employee_count].bank_name);
+    printf("\nBank Account Number: ");
+    scanf(" %49[^\n]",emp[employee_count].bank_account);
+    printf("\nBasic Salary: ");
+    scanf(" %f",emp[employee_count].basic_salary);
+    printf("\nAllowance if any: ");
+    scanf(" %f",emp[employee_count].allowance);
+    printf("\nOvertime Pay: ");
+    scanf(" %f",emp[employee_count].overtime_pay);
+    printf("\nBonus: ");
+    scanf(" %f",emp[employee_count].bonuses);
+    printf("\nTaxes: ");
+    scanf(" %f",emp[employee_count].taxes);
 
 }
+
+void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE.
+    if (employee_count < Max_Employee) {                                     // CHECKING IF ANY MORE EMPLOYEES CAN BE ADDED 
+        int current_index = employee_count;                                  // PRESERVING INDEX TO APPEND EMPLOYEE DETAILS ON IN STRUCTURE
+        
+        input();                                            // TAKING INPUT.
+        employee_count++ ;                                                    // 1 EMPLOYEE ADDED.
+
+        FILE *fp = fopen("Employee Payroll Records.csv", "a");                // OPENING FILE IN APPEND MODE.
+        if (fp != NULL) {                                                     // FILE ERROR, (DOESN'T EXIST,ETC).
+
+            // APPENDING INPUT TAKEN FROM STRUCTURE TO THE CSV FILE. 
+            fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f\n",  
+                emp[employee_count].name, emp[employee_count].id, emp[employee_count].designation, 
+                emp[employee_count].department, emp[employee_count].email, emp[employee_count].date_joining, 
+                emp[employee_count].experience, emp[employee_count].bank_name, emp[employee_count].bank_account, 
+                emp[employee_count].basic_salary, emp[employee_count].allowance, emp[employee_count].overtime_pay, 
+                emp[employee_count].bonuses, emp[employee_count].taxes);
+            
+            fclose(fp);                                                         
+            printf("\nEmployee appended successfully in the file!\n");
+        } else {
+            printf("\nError! unable to open file!\n");                        // FP = NULL
+        }
+    } else {
+        printf("\nMaximum employee limit has been reached, no more employee entry possible.\n");                  // employee_count = MAX_EMPLOYEE
+    }
+}
+  
+
+
+
  int search(char employid[])
 {
     int i;
