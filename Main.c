@@ -124,29 +124,30 @@ void input(){
     printf("\nBank Name: ");
     scanf(" %49[^\n]",emp[employee_count].bank_name);
     printf("\nBank Account Number: ");
-    scanf(" %49[^\n]",emp[employee_count].bank_account);
+    scanf(" %49[^\n]",&emp[employee_count].bank_account);
     printf("\nBasic Salary: ");
-    scanf(" %f",emp[employee_count].basic_salary);
+    scanf(" %f",&emp[employee_count].basic_salary);
     printf("\nAllowance if any: ");
-    scanf(" %f",emp[employee_count].allowance);
+    scanf(" %f",&emp[employee_count].allowance);
     printf("\nOvertime Pay: ");
-    scanf(" %f",emp[employee_count].overtime_pay);
+    scanf(" %f",&emp[employee_count].overtime_pay);
     printf("\nBonus: ");
-    scanf(" %f",emp[employee_count].bonuses);
+    scanf(" %f",&emp[employee_count].bonuses);
     printf("\nTaxes: ");
-    scanf(" %f",emp[employee_count].taxes);
+    scanf(" %f",&emp[employee_count].taxes);
 
+    // Automatically calculate Net Salary
+    emp[employee_count].net_salary = emp[employee_count].basic_salary + emp[employee_count].allowance + emp[employee_count].overtime_pay + emp[employee_count].bonuses - emp[employee_count].taxes;
+    
 }
 
 void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE.
     if (employee_count < Max_Employee) {                                     // CHECKING IF ANY MORE EMPLOYEES CAN BE ADDED 
-        int current_index = employee_count;                                  // PRESERVING INDEX TO APPEND EMPLOYEE DETAILS ON IN STRUCTURE
         
-        input();                                            // TAKING INPUT.
-        employee_count++ ;                                                    // 1 EMPLOYEE ADDED.
+        input();                                                             // TAKING INPUT.                                                
 
-        FILE *fp = fopen("Employee Payroll Records.csv", "a");                // OPENING FILE IN APPEND MODE.
-        if (fp != NULL) {                                                     // FILE ERROR, (DOESN'T EXIST,ETC).
+        FILE *fp = fopen("Employee Payroll Records.csv", "a");               // OPENING FILE IN APPEND MODE.
+        if (fp != NULL) {                                                    // FILE ERROR, (DOESN'T EXIST,ETC).
 
             // APPENDING INPUT TAKEN FROM STRUCTURE TO THE CSV FILE. 
             fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f\n",  
@@ -155,6 +156,8 @@ void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE
                 emp[employee_count].experience, emp[employee_count].bank_name, emp[employee_count].bank_account, 
                 emp[employee_count].basic_salary, emp[employee_count].allowance, emp[employee_count].overtime_pay, 
                 emp[employee_count].bonuses, emp[employee_count].taxes);
+ 
+            employee_count++ ;                                               // 1 EMPLOYEE ADDED SUCCESSFULLY
             
             fclose(fp);                                                         
             printf("\nEmployee appended successfully in the file!\n");
@@ -166,9 +169,6 @@ void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE
     }
 }
   
-
-
-
  int search(char employid[])
 {
     int i;
@@ -189,7 +189,6 @@ void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE
 
 void display(int i)
 {
-    
         printf("Name:%s",emp[i].name);
         printf("\nID:%s",emp[i].id);
         printf("\nDesignation:%s",emp[i].designation);
