@@ -21,7 +21,7 @@ typedef struct{
     char designation[100];
     char department[100];
     char email[100];
-    char date_joining[10];
+    char date_joining[20];
     float experience;
     char bank_name[50];
     char bank_account[50];
@@ -107,19 +107,19 @@ int main(){
 
 void input(){
     printf("Enter The Details as prompted\n");
-    printf("Name: ");
+    printf("Name as per CNIC: ");
     scanf(" %99[^\n]", emp[employee_count].name);                 // %99 means it will take max 99 chracters in a single input, which is last index of name array.
-    printf("\nID: ");                                     // [^\n] tells scanf to read spaxces also, until enter is pressed.
+    printf("\nID: ");                                             // [^\n] tells scanf to read spaxces also, until enter is pressed.
     scanf(" %19[^\n]", emp[employee_count].id);                   // " %99[^\n] a space is given so that input buffer soesn't have \n by any chance; otherwise it would endthis scanf statement immediatrely.  "
-    printf("\nDesignation: ");                            // note that input buffer may have \n due to 'enter' pressed while taking option input., which is then left in the input buffer
+    printf("\nEmployee Designation: ");                           // note that input buffer may have \n due to 'enter' pressed while taking option input., which is then left in the input buffer
     scanf(" %99[^\n]",emp[employee_count].designation);           // and when scanf functon runs, it reads the input buffer which has \n, it ends immediately.           
     printf("\nDepartment: ");
     scanf(" %99[^\n]",emp[employee_count].department);
     printf("\nEmail: ");
     scanf(" %99[^\n]",emp[employee_count].email);
-    printf("\nJoining Date: ");
+    printf("\nJoining Date (dd/mm/yy): ");
     scanf(" %9[^\n]",emp[employee_count].date_joining);
-    printf("\nExperience: ");
+    printf("\nExperience (in years): ");
     scanf(" %f",&emp[employee_count].experience);
     printf("\nBank Name: ");
     scanf(" %49[^\n]",emp[employee_count].bank_name);
@@ -127,9 +127,9 @@ void input(){
     scanf(" %49[^\n]",&emp[employee_count].bank_account);
     printf("\nBasic Salary: ");
     scanf(" %f",&emp[employee_count].basic_salary);
-    printf("\nAllowance if any: ");
+    printf("\nAllowance : ");
     scanf(" %f",&emp[employee_count].allowance);
-    printf("\nOvertime Pay: ");
+    printf("\nOvertime Pay : ");
     scanf(" %f",&emp[employee_count].overtime_pay);
     printf("\nBonus: ");
     scanf(" %f",&emp[employee_count].bonuses);
@@ -138,7 +138,7 @@ void input(){
 
     // Automatically calculate Net Salary
     emp[employee_count].net_salary = emp[employee_count].basic_salary + emp[employee_count].allowance + emp[employee_count].overtime_pay + emp[employee_count].bonuses - emp[employee_count].taxes;
-    
+
 }
 
 void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE.
@@ -150,14 +150,14 @@ void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE
         if (fp != NULL) {                                                    // FILE ERROR, (DOESN'T EXIST,ETC).
 
             // APPENDING INPUT TAKEN FROM STRUCTURE TO THE CSV FILE. 
-            fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f\n",  
+            fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",  
                 emp[employee_count].name, emp[employee_count].id, emp[employee_count].designation, 
                 emp[employee_count].department, emp[employee_count].email, emp[employee_count].date_joining, 
                 emp[employee_count].experience, emp[employee_count].bank_name, emp[employee_count].bank_account, 
                 emp[employee_count].basic_salary, emp[employee_count].allowance, emp[employee_count].overtime_pay, 
-                emp[employee_count].bonuses, emp[employee_count].taxes);
+                emp[employee_count].bonuses, emp[employee_count].taxes, emp[employee_count].net_salary);
  
-            employee_count++ ;                                               // 1 EMPLOYEE ADDED SUCCESSFULLY
+            employee_count++ ;                                               // 1 EMPLOYEE ADDED.
             
             fclose(fp);                                                         
             printf("\nEmployee appended successfully in the file!\n");
@@ -232,7 +232,7 @@ void deleteEmployee(void) {
     }
 
     employee_count--;
-    saveData(); 
+    //saveData(); 
     printf("Employee deleted successfully.\n");
 }
 
@@ -267,28 +267,28 @@ do {
         {
             printf("Enter new Designation: ");
             scanf("%99[^\n]", emp[index].designation);
-            saveData();
+            //saveData();
             printf("Designation updated and saved successfully!\n");
             break; }
         case 2:
         {
             printf("Enter new Department: ");
             scanf("%99[^\n]", emp[index].department);
-            saveData();
+            //saveData();
             printf("Department updated and saved successfully!\n");
             break; }
         case 3:
         {
             printf("Enter new Email: ");
             scanf("%99s", emp[index].email);
-            saveData();
+            //saveData();
             printf("Email updated and saved successfully!\n");
             break; }
         case 4:
         {
             printf("Enter updated Experience (years): ");
             scanf("%f", &emp[index].experience);
-            saveData();
+            //saveData();
             printf("Experience updated and saved successfully!\n");
             break; }
         case 5:
@@ -296,7 +296,7 @@ do {
             printf("Enter new Basic Salary: ");
             scanf("%f", &emp[index].basic_salary);
             emp[index].net_salary = emp[index].basic_salary + emp[index].allowance + emp[index].bonuses + emp[index].overtime_pay - emp[index].taxes;
-            saveData();
+            //saveData();
             printf("Salary updated and saved successfully!\n");
             break; }
             case 0:
