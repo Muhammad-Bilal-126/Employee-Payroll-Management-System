@@ -34,7 +34,7 @@ typedef struct{
 }Employee;
 
     Employee emp[Max_Employee];
-    int employee_count=0;
+    int employee_count = 0;
     int search(char arr[]);
     void display(int i);
     void updateEmployee(void);
@@ -46,7 +46,6 @@ typedef struct{
 int main(){
     int option;
     do {
-        
         printf("%110s\n","=== Employee Payroll Management System ===");
         printf("\n%70s\n","1-Add a new employee");
         printf("\n%80s\n","2-Display all employee records");
@@ -57,51 +56,55 @@ int main(){
         printf("\n%83s\n","7-Exit from the management system");
         printf("\n%81s","Which Option Do You Want to Choose: ");
         scanf("%d",&option);
+
+        // fetching no. of employees from file directly.
+
+        FILE *file;                                                           
+        file = fopen ("values.txt","r");         
+        if (file != NULL) {
+            fscanf(file, "%d", &employee_count);
+            fclose(file);
+        }
+
+        printf("Total no. of employees are: %d\n", employee_count);
+
         //Add login ability then show menu
         switch (option)
         {
-            case (1): //Add a new employee's record
-            {
+            case (1):{                          //Add a new employee's record
                 add_employee ();
                 break;
             }
-            case (2): //Display all employee records
-            {
+            case (2):{                          //Display all employee records
                 break;
             }
-            case (3): //Update an employee's record
-            {
+            case (3): {                         //Update an employee's record
                 updateEmployee();
                 break;
             }
-            case (4): //Delete an employee's record
-            {
+            case (4):{                          //Delete an employee's record
                 deleteEmployee();
                 break;
             }
-            case (5): //Search for a particular employee
-            {
+            case (5):{                          //Search for a particular employee
                 char employid[20];
                 printf("Enter the employ id to search\n");
                 scanf("%s",employid);
                 search(employid);
                 break;
             }
-            case (6): //Generate a payslip for a particular employee 
-            {  
+            case (6):{                           //Generate a payslip for a particular employee  
                 break;
             }
-            case (7): //Exit from management system
-            {
+            case (7):{                           //Exit from management system
                 printf("\n Exiting From Management System Program");
                 break;
             }
             default:
-            printf("\n Invalid Input");
+            printf("\n Invalid Option Chosen!");
         }
-        
+
     }while(option!=7);
-    
     return 0;
 }
 
@@ -125,29 +128,26 @@ void input(){
     scanf(" %49[^\n]",emp[employee_count].bank_name);
     printf("\nBank Account Number: ");
     scanf(" %49[^\n]",&emp[employee_count].bank_account);
-    printf("\nBasic Salary: ");
+    printf("\nBasic Salary (in PKR): ");
     scanf(" %f",&emp[employee_count].basic_salary);
-    printf("\nAllowance : ");
+    printf("\nAllowance (in PKR) : ");
     scanf(" %f",&emp[employee_count].allowance);
-    printf("\nOvertime Pay : ");
+    printf("\nOvertime Pay (in PKR): ");
     scanf(" %f",&emp[employee_count].overtime_pay);
-    printf("\nBonus: ");
+    printf("\nBonus (in PKR): ");
     scanf(" %f",&emp[employee_count].bonuses);
-    printf("\nTaxes: ");
+    printf("\nTaxes (in PKR): ");
     scanf(" %f",&emp[employee_count].taxes);
-
     // Automatically calculate Net Salary
     emp[employee_count].net_salary = emp[employee_count].basic_salary + emp[employee_count].allowance + emp[employee_count].overtime_pay + emp[employee_count].bonuses - emp[employee_count].taxes;
-
 }
 
-void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE.
+void add_employee() {                                                        
     if (employee_count < Max_Employee) {                                     // CHECKING IF ANY MORE EMPLOYEES CAN BE ADDED 
-        
         input();                                                             // TAKING INPUT.                                                
-
-        FILE *fp = fopen("Employee Payroll Records.csv", "a");               // OPENING FILE IN APPEND MODE.
-        if (fp != NULL) {                                                    // FILE ERROR, (DOESN'T EXIST,ETC).
+        FILE *fp;
+        fp = fopen("Employee Payroll Records.csv", "a");                     // OPENING FILE IN APPEND MODE.
+        if (fp != NULL) {                                                    // FILE ERROR.
 
             // APPENDING INPUT TAKEN FROM STRUCTURE TO THE CSV FILE. 
             fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",  
@@ -157,10 +157,17 @@ void add_employee() {                      // PASS NO. OF EMPLOYEES BY REFERENCE
                 emp[employee_count].basic_salary, emp[employee_count].allowance, emp[employee_count].overtime_pay, 
                 emp[employee_count].bonuses, emp[employee_count].taxes, emp[employee_count].net_salary);
  
-            employee_count++ ;                                               // 1 EMPLOYEE ADDED.
+            employee_count++ ;                                                // 1 EMPLOYEE ADDED.
             
-            fclose(fp);                                                         
-            printf("\nEmployee appended successfully in the file!\n");
+            fclose(fp);        
+
+            fp = fopen("values.txt", "w");                                    // Storing no. of employees permanently in a file.
+            if (fp != NULL) {
+                fprintf(fp, "%d", employee_count);
+                fclose(fp);
+                printf("\nEmployee appended successfully in the file!\n");
+            }
+
         } else {
             printf("\nError! unable to open file!\n");                        // FP = NULL
         }
