@@ -40,6 +40,7 @@ typedef struct{
     void updateEmployee(void);
     void deleteEmployee(void);
     void savedata();
+
     void input();
     void add_employee ();
 
@@ -257,7 +258,7 @@ void deleteEmployee(void) {
     }
 
     employee_count--;
-    saveData(); 
+    //saveData(); 
     printf("Employee deleted successfully.\n");
 }
 
@@ -292,28 +293,28 @@ do {
         {
             printf("Enter new Designation: ");
             scanf("%99[^\n]", emp[index].designation);
-            saveData();
+            //saveData();
             printf("Designation updated and saved successfully!\n");
             break; }
         case 2:
         {
             printf("Enter new Department: ");
             scanf("%99[^\n]", emp[index].department);
-            saveData();
+            //saveData();
             printf("Department updated and saved successfully!\n");
             break; }
         case 3:
         {
             printf("Enter new Email: ");
             scanf("%99s", emp[index].email);
-            saveData();
+            //saveData();
             printf("Email updated and saved successfully!\n");
             break; }
         case 4:
         {
             printf("Enter updated Experience (years): ");
             scanf("%f", &emp[index].experience);
-            saveData();
+            //saveData();
             printf("Experience updated and saved successfully!\n");
             break; }
         case 5:
@@ -321,7 +322,7 @@ do {
             printf("Enter new Basic Salary: ");
             scanf("%f", &emp[index].basic_salary);
             emp[index].net_salary = emp[index].basic_salary + emp[index].allowance + emp[index].bonuses + emp[index].overtime_pay - emp[index].taxes;
-            saveData();
+            //saveData();
             printf("Salary updated and saved successfully!\n");
             break; }
             case 0:
