@@ -39,6 +39,7 @@ typedef struct{
     void display(int i);
     void updateEmployee(void);
     void deleteEmployee(void);
+    void savedata();
 
     void input();
     void add_employee ();
@@ -212,7 +213,25 @@ void display(int i)
         printf("\nTaxes:%f",emp[i].taxes);
         printf("Final Salary:%f",emp[i].net_salary);
 }
-
+   void savedata() {
+    FILE *fp = fopen("Employee Payroll Records.csv", "w");
+    if (fp != NULL) {
+        for (int i = 0; i < employee_count; i++) {
+            fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", 
+                emp[i].name, emp[i].id, emp[i].designation, 
+                emp[i].department, emp[i].email, emp[i].date_joining, 
+                emp[i].experience, emp[i].bank_name, emp[i].bank_account, 
+                emp[i].basic_salary, emp[i].allowance, emp[i].overtime_pay, 
+                emp[i].bonuses, emp[i].taxes, emp[i].net_salary);
+        }
+        fclose(fp);
+    }
+FILE *v_fp = fopen("values.txt", "w");
+    if (v_fp != NULL) {
+        fprintf(v_fp, "%d", employee_count);
+        fclose(v_fp);
+    }
+}
 void deleteEmployee(void) {
     char delete_id[20];
     int index = -1;
