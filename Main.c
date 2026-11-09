@@ -1,19 +1,6 @@
 #include<stdio.h>
 #include<string.h>
-/*
-functions list:
-1) aik functions sarri details ko user se input lene ke liye --> Shehryar
-2) aik function add employee record ke liye jisme woh file open ho, 
-   input lene ka function call ho, woh data file mein append ho (append karna hai write nhi) 
-   aur file save hokar close hogaye with data validation --> Shehryar
-3) Aik function employee ko search karne ka based on employee id ---> Bilal
-4) Aik function sarre employees ko display karne ke liye ---> Qaim
-5) Aik function kisi particular employee ka record delete karne ke liye based on employee id --->Amin
-6) Aik function payslip generate karne ke liye --->Qaim
-7) Aik function kisi particular employee ka record update karne ke liye, 
-jis employee ka record update karna hoga user iski id dega --> Amin
-8) Exit ka code direct main mein likh deingy ---> Qaim
-*/
+
 #define Max_Employee 100
 typedef struct{
     char name[100];
@@ -76,6 +63,7 @@ int main(){
                 break;
             }
             case (2):{                          //Display all employee records
+                
                 break;
             }
             case (3): {                         //Update an employee's record
