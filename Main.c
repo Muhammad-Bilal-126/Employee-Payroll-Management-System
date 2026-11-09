@@ -1,5 +1,7 @@
 #include<stdio.h>
 #include<string.h>
+#include <ctype.h>
+#include<math.h>
 /*
 functions list:
 1) aik functions sarri details ko user se input lene ke liye --> Shehryar
@@ -32,17 +34,38 @@ typedef struct{
     float taxes;
     float net_salary;
 }Employee;
-
+    // GLOBAL VARIABLES.
     Employee emp[Max_Employee];
     int employee_count = 0;
+
     int search(char arr[]);
     void display(int i);
     void updateEmployee(void);
     void deleteEmployee(void);
     void savedata();
+    void input(void);
+    int add_employee (void);
 
-    void input();
-    void add_employee ();
+    // ----------- input helpers -----------------
+
+    void clear_buffer(void);
+    int read_float(float *value);
+    int only_letters_and_spaces(const char *text);
+
+    // ----------- field validators: each returns 0 if input is valid, -1 if invalid -------------
+    int validate_name(const char *name);
+    int validate_id(const char *id);
+    int validate_designation(const char *designation);
+    int validate_department(const char *department);
+    int validate_email(const char *email);
+    int validate_experience(float years);
+    int validate_bank_name(const char *bank_name);
+    int validate_bank_account(const char *account);
+    int validate_basic_salary(float amount);
+    int validate_allowance(float amount);
+    int validate_overtime(float amount);
+    int validate_bonuses(float amount);
+    int validate_taxes(float taxes, float gross_salary);
 
 int main(){
     int option;
@@ -90,7 +113,8 @@ int main(){
             case (5):{                          //Search for a particular employee
                 char employid[20];
                 printf("Enter the employ id to search\n");
-                scanf("%s",employid);
+                scanf(" %s",employid);
+                clear_buffer();
                 search(employid);
                 break;
             }
@@ -109,43 +133,166 @@ int main(){
     return 0;
 }
 
-void input(){
+// =====================================================================================================
+//                                              INPUT
+// =====================================================================================================
+/*
+   Every field follows the same pattern:
+    takes the input ----------> validates it -----------> if invalid retakes input (status = -1)
+    continues until a valid input is given (status = 0)    
+*/
+
+void input(void){
+    Employee *e = &emp[employee_count];     // shortcut to the record currently being filled
+    int status;                             // indicates if input is valid or not (-1 for invalid, 0 for valid)
+
     printf("Enter The Details as prompted\n");
-    printf("Name as per CNIC: ");
-    scanf(" %99[^\n]", emp[employee_count].name);                 // %99 means it will take max 99 chracters in a single input, which is last index of name array.
-    printf("\nID: ");                                             // [^\n] tells scanf to read spaxces also, until enter is pressed.
-    scanf(" %19[^\n]", emp[employee_count].id);                   // " %99[^\n] a space is given so that input buffer soesn't have \n by any chance; otherwise it would endthis scanf statement immediatrely.  "
-    printf("\nEmployee Designation: ");                           // note that input buffer may have \n due to 'enter' pressed while taking option input., which is then left in the input buffer
-    scanf(" %99[^\n]",emp[employee_count].designation);           // and when scanf functon runs, it reads the input buffer which has \n, it ends immediately.           
-    printf("\nDepartment: ");
-    scanf(" %99[^\n]",emp[employee_count].department);
-    printf("\nEmail: ");
-    scanf(" %99[^\n]",emp[employee_count].email);
-    printf("\nJoining Date (dd/mm/yy): ");
-    scanf(" %9[^\n]",emp[employee_count].date_joining);
-    printf("\nExperience (in years): ");
-    scanf(" %f",&emp[employee_count].experience);
-    printf("\nBank Name: ");
-    scanf(" %49[^\n]",emp[employee_count].bank_name);
-    printf("\nBank Account Number: ");
-    scanf(" %49[^\n]",&emp[employee_count].bank_account);
-    printf("\nBasic Salary (in PKR): ");
-    scanf(" %f",&emp[employee_count].basic_salary);
-    printf("\nAllowance (in PKR) : ");
-    scanf(" %f",&emp[employee_count].allowance);
-    printf("\nOvertime Pay (in PKR): ");
-    scanf(" %f",&emp[employee_count].overtime_pay);
-    printf("\nBonus (in PKR): ");
-    scanf(" %f",&emp[employee_count].bonuses);
-    printf("\nTaxes (in PKR): ");
-    scanf(" %f",&emp[employee_count].taxes);
+
+    // ---------------------------------------------- Name ------------------------------------------------------
+    do {
+        printf("\nName as per CNIC: ");
+        scanf(" %99[^\n]", e->name);        // %99 = max 99 characters (leave last index is for '\0'). [^\n] also reads spaces until enter.
+        clear_buffer();                     // throw away anything extra typed beyond the limit, so it doesn't leak into the next scanf.
+        status = validate_name(e->name);
+        if (status == -1)
+            printf("Invalid name! Use letters and spaces only.\n");
+    } while (status == -1);
+
+    // ----------------------------------------------- ID -----------------------------------------------
+    do {
+        printf("\nID: ");
+        scanf(" %19[^\n]", e->id);
+        clear_buffer();
+        status = validate_id(e->id);
+        if (status == -1)
+            printf("Invalid ID! Use letters, digits and '-' only (no spaces).\n");
+    } while (status == -1);
+
+    // ------------------------------------------- Designation ------------------------------------------
+    do {
+        printf("\nEmployee Designation: ");
+        scanf(" %99[^\n]", e->designation);
+        clear_buffer();
+        status = validate_designation(e->designation);
+        if (status == -1)
+            printf("Invalid designation! Use letters and spaces only.\n");
+    } while (status == -1);
+
+    // -------------------------------------------- Department ------------------------------------------
+    do {
+        printf("\nDepartment: ");
+        scanf(" %99[^\n]", e->department);
+        clear_buffer();
+        status = validate_department(e->department);
+        if (status == -1)
+            printf("Invalid department! Use letters and spaces only.\n");
+    } while (status == -1);
+
+    // ---------------------------------------------- Email ---------------------------------------------
+    do {
+        printf("\nEmail: ");
+        scanf(" %99[^\n]", e->email);
+        clear_buffer();
+        status = validate_email(e->email);
+        if (status == -1)
+            printf("Invalid email! Example of a valid format: name@example.com\n");
+    } while (status == -1);
+
+    // ------------------------------------------- Joining Date -----------------------------------------
+    // (not validated)
+    printf("\nJoining Date strictly in format (dd/mm/yy): ");
+    scanf(" %19[^\n]", e->date_joining);
+    clear_buffer();
+
+    // ------------------------------------------- Experience -------------------------------------------
+    do {
+        printf("\nExperience (in years): ");
+        status = read_float(&e->experience);                       // -1 if the user typed something that isn't a number
+        if (status == 0)
+            status = validate_experience(e->experience);
+        if (status == -1)
+            printf("Invalid experience! Enter a number between 0 and 60.\n");
+    } while (status == -1);
+
+    // ------------------------------------------- Bank Name --------------------------------------------
+    do {
+        printf("\nBank Name: ");
+        scanf(" %49[^\n]", e->bank_name);
+        clear_buffer();
+        status = validate_bank_name(e->bank_name);
+        if (status == -1)
+            printf("Invalid bank name! Use letters and spaces only.\n");
+    } while (status == -1);
+
+    // ---------------------------------------- Bank Account No. ----------------------------------------
+    do {
+        printf("\nBank Account Number: ");
+        scanf(" %49[^\n]", e->bank_account);
+        clear_buffer();
+        status = validate_bank_account(e->bank_account);
+        if (status == -1)
+            printf("Invalid account number! Use 8 to 34 letters/digits, no spaces or symbols.\n");
+    } while (status == -1);
+
+    // ------------------------------------------ Basic Salary ------------------------------------------
+    do {
+        printf("\nBasic Salary (in PKR): ");
+        status = read_float(&e->basic_salary);
+        if (status == 0)
+            status = validate_basic_salary(e->basic_salary);
+        if (status == -1)
+            printf("Invalid salary! Enter a number greater than 0.\n");
+    } while (status == -1);
+
+    // -------------------------------------------- Allowance -------------------------------------------
+    do {
+        printf("\nAllowance (in PKR) : ");
+        status = read_float(&(*e).allowance);
+        if (status == 0)                               // solely a float was given as input.
+            status = validate_allowance(e->allowance);
+        if (status == -1)                              // input had some other characters also apart from the number, so marked as invalid.
+            printf("Invalid allowance! Enter a number (0 or more).\n");
+    } while (status == -1);
+
+    // ------------------------------------------- Overtime Pay -----------------------------------------
+    do {
+        printf("\nOvertime Pay (in PKR): ");
+        status = read_float(&e->overtime_pay);
+        if (status == 0)
+            status = validate_overtime(e->overtime_pay);
+        if (status == -1)
+            printf("Invalid overtime pay! Enter a number (0 or more).\n");
+    } while (status == -1);
+
+    // ---------------------------------------------- Bonus ---------------------------------------------
+    do {
+        printf("\nBonus (in PKR): ");
+        status = read_float(&e->bonuses);
+        if (status == 0)
+            status = validate_bonuses(e->bonuses);
+        if (status == -1)
+            printf("Invalid bonus! Enter a number (0 or more).\n");
+    } while (status == -1);
+
+    // ---------------------------------------------- Taxes ---------------------------------------------
+    do {
+        printf("\nTaxes (in PKR): ");
+        status = read_float(&e->taxes);
+        if (status == 0)
+            status = validate_taxes(e->taxes, e->basic_salary + e->allowance + e->overtime_pay + e->bonuses);
+        if (status == -1)
+            printf("Invalid taxes! Enter a number (0 or more) that doesn't exceed the gross salary.\n");
+    } while (status == -1);
+
     // Automatically calculate Net Salary
-    emp[employee_count].net_salary = emp[employee_count].basic_salary + emp[employee_count].allowance + emp[employee_count].overtime_pay + emp[employee_count].bonuses - emp[employee_count].taxes;
+    e->net_salary = e->basic_salary + e->allowance + e->overtime_pay + e->bonuses - e->taxes;
 }
 
-void add_employee() {                                                        
-    if (employee_count < Max_Employee) {                                     // CHECKING IF ANY MORE EMPLOYEES CAN BE ADDED 
-        input();                                                             // TAKING INPUT.                                                
+int add_employee(void) {                                                        
+    if (employee_count < Max_Employee) {               // CHECKING IF ANY MORE EMPLOYEES CAN BE ADDED 
+
+        input();                                       // TAKING INPUT (every field is already validated inside input()).
+        
         FILE *fp;
         fp = fopen("Employee Payroll Records.csv", "a");                     // OPENING FILE IN APPEND MODE.
         if (fp != NULL) {                                                    // FILE ERROR.
@@ -167,16 +314,189 @@ void add_employee() {
                 fprintf(fp, "%d", employee_count);
                 fclose(fp);
                 printf("\nEmployee appended successfully in the file!\n");
+                return 0;
             }
+            return -1;                                                        // couldn't update values.txt
 
         } else {
             printf("\nError! unable to open file!\n");                        // FP = NULL
+            return -1;
         }
     } else {
         printf("\nMaximum employee limit has been reached, no more employee entry possible.\n");                  // employee_count = MAX_EMPLOYEE
+        return -1;
     }
 }
-  
+
+// =====================================================================================================
+//                                           INPUT HELPERS
+// =====================================================================================================
+
+// Discards everything left in the input buffer up to and including the next '\n'.
+void clear_buffer(void){
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+// Reads one float from the user. Returns 0 on success, -1 if the input wasn't a proper number
+// (e.g. "abc" or "12abc"). Always leaves the input buffer clean, so the retry loop can't get stuck.
+int read_float(float *value){
+    int c;
+
+    if (scanf(" %f", value) != 1) {         // sth numeric red so scanf returned 1 ---> (1 != 1) --> condition false --> buffer not cleared.
+        clear_buffer();                     // if nothing numeric red by scanf(),---> scanf() returns 0 ---> condition true ---> then it clears the buffer. 
+        return -1;                          // if input is sth like "12abc\n", then scanf reads 12 but abc\n remains in buffer and needs to be removed.
+    }
+    // if input is sth like "12abc\n", then scanf reads 12 but abc\n remains in buffer and needs to be removed.
+    
+    while ((c = getchar()) == ' ' || c == '\t');     // removes any trailing spaces '    ' from buffer.
+    if (c != '\n' && c != EOF) {                     // Since, neither a new line nor end of buffer --> condition true --> clear the buffer
+        clear_buffer();
+        return -1;                                   // also return -1, to indicate to input() function that the input was not puerly correct.
+    } 
+    return 0;
+}
+
+// This function is used by name, designation, department and bank name:
+// only letters and spaces are allowed, and at least one letter must be present.
+int only_letters_and_spaces(const char *text){
+    int i;
+
+    for (i = 0; text[i] != '\0'; i++) {
+        // Cast to unsigned char to safely handle negative extended ASCII values.
+        if (isalpha((unsigned char)text[i]) == 0 && text[i] != ' ')    // use of unsigned char removes the sign bit, so safe comparison, no crash in program.
+            return -1;                                                 // isalpha() checks whether a character is a letter (returns 0 if not a letter).
+    }
+
+    return 0;
+}
+
+// =====================================================================================================
+//                                        FIELD VALIDATORS
+//                                  return 0 = valid, -1 = invalid
+// =====================================================================================================
+
+int validate_name(const char *name){
+    return only_letters_and_spaces(name);
+}
+
+int validate_id(const char *id){
+    int i;
+
+    if (id[0] == '\0')
+        return -1;
+    for (i = 0; id[i] != '\0'; i++) {
+        if (isalnum((unsigned char)id[i]) == 0 && id[i] != '-')         // isalnum checks for a letter or digit (returns 0 if not a letter or digit).
+            return -1;                                                  // given an exception of hyphen '-' in id.
+    }
+    return 0;
+}
+
+int validate_designation(const char *designation){
+    return only_letters_and_spaces(designation);
+}
+
+int validate_department(const char *department){
+    return only_letters_and_spaces(department);
+}
+
+int validate_email(const char *email){
+    int i;
+
+    if (strlen(email) < 5)                              // email can't be of less than 5 characters logically (a@b.c).
+        return -1;
+
+    for (i = 0; i < strlen(email); i++) {               // there should be no spaces in email.
+        if (isspace((unsigned char)email[i]) )          // if a space in email, isspace() returns 1, condition satisfies, so an invalid input.
+            return -1;
+    }
+
+    const char *at = strchr(email, '@');                // strchr scans through the email string left to right, looking for the @ character. 
+    if (at == NULL)                                     // unsigned char removes the sign bit, so safe comparison, no crash in program.
+        return -1;                                      // If it doesn't find the @, it returns NULL (which means "nothing found").
+
+    if (strchr(at + 1, '@') != NULL)                    // there should be only ONE '@' symbol
+        return -1;
+
+    if (at == email)                                    // the '@' cannot be the first character
+        return -1;
+
+    const char *dot = strchr(at + 1, '.');              // email must have a dot '.' somewhere after the '@'
+    if (dot == NULL)
+        return -1;
+
+    if (dot == at + 1)                                  // the '.' can't be immediately after the '@' (e.g. user@.com)
+        return -1;
+
+    if (email[strlen(email) - 1] == '.')                          // the '.' cannot be the very last character
+        return -1;
+
+    return 0;
+}
+
+int validate_experience(float years){
+    if (years < 0 || years > 60)
+        return -1;
+    return 0;
+}
+
+int validate_bank_name(const char *bank_name){
+    return only_letters_and_spaces(bank_name);
+}
+
+int validate_bank_account(const char *account){
+    int i;
+
+    if (strlen(account) < 8 || strlen(account) > 34)                  // account no. / IBAN length range 
+        return -1;
+    for (i = 0; i < strlen(account); i++) {
+        if (!isalnum((unsigned char)account[i]))
+            return -1;
+    }
+    return 0;
+}
+
+int validate_basic_salary(float amount){
+    
+    if (amount <= 0)                                    // basic salary must be positive
+        return -1;
+    return 0;
+}
+
+int validate_allowance(float amount){
+
+    if (amount < 0)
+        return -1;
+    return 0;
+
+}
+
+int validate_overtime(float amount){
+    if (amount < 0)
+        return -1;
+    return 0;
+}
+
+int validate_bonuses(float amount){
+    if (amount < 0)
+        return -1;
+    return 0;
+}
+
+int validate_taxes(float taxes, float gross_salary){
+    
+    if (taxes < 0)
+        return -1;
+    if (taxes > gross_salary)                           // otherwise the net salary would become negative
+        return -1;
+    return 0;
+}
+
+
+
+
+
+
  int search(char employid[])
 {
     int i;
