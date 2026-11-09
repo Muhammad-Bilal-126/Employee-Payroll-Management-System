@@ -155,7 +155,7 @@ void input(void){
         clear_buffer();                     // throw away anything extra typed beyond the limit, so it doesn't leak into the next scanf.
         status = validate_name(e->name);
         if (status == -1)
-            printf("Invalid name! Use letters and spaces only.\n");
+            printf("Invalid name! Use letters only.\n");
     } while (status == -1);
 
     // ----------------------------------------------- ID -----------------------------------------------
@@ -165,7 +165,7 @@ void input(void){
         clear_buffer();
         status = validate_id(e->id);
         if (status == -1)
-            printf("Invalid ID! Use letters, digits and '-' only (no spaces).\n");
+            printf("Invalid ID! an ID can have letters, digits and hyphen ('-') only (no spaces also).\n");
     } while (status == -1);
 
     // ------------------------------------------- Designation ------------------------------------------
@@ -175,7 +175,7 @@ void input(void){
         clear_buffer();
         status = validate_designation(e->designation);
         if (status == -1)
-            printf("Invalid designation! Use letters and spaces only.\n");
+            printf("Invalid designation entered! Use letters only.\n");
     } while (status == -1);
 
     // -------------------------------------------- Department ------------------------------------------
@@ -185,7 +185,7 @@ void input(void){
         clear_buffer();
         status = validate_department(e->department);
         if (status == -1)
-            printf("Invalid department! Use letters and spaces only.\n");
+            printf("Invalid department! Use letters only.\n");
     } while (status == -1);
 
     // ---------------------------------------------- Email ---------------------------------------------
@@ -195,7 +195,7 @@ void input(void){
         clear_buffer();
         status = validate_email(e->email);
         if (status == -1)
-            printf("Invalid email! Example of a valid format: name@example.com\n");
+            printf("Invalid email entered! wrong format.\n");
     } while (status == -1);
 
     // ------------------------------------------- Joining Date -----------------------------------------
@@ -206,7 +206,7 @@ void input(void){
 
     // ------------------------------------------- Experience -------------------------------------------
     do {
-        printf("\nExperience (in years): ");
+        printf("\nExperience of employee (in years): ");
         status = read_float(&e->experience);                       // -1 if the user typed something that isn't a number
         if (status == 0)
             status = validate_experience(e->experience);
@@ -221,7 +221,7 @@ void input(void){
         clear_buffer();
         status = validate_bank_name(e->bank_name);
         if (status == -1)
-            printf("Invalid bank name! Use letters and spaces only.\n");
+            printf("Invalid bank name! Bank  name consists of letters only.\n");
     } while (status == -1);
 
     // ---------------------------------------- Bank Account No. ----------------------------------------
@@ -231,7 +231,7 @@ void input(void){
         clear_buffer();
         status = validate_bank_account(e->bank_account);
         if (status == -1)
-            printf("Invalid account number! Use 8 to 34 letters/digits, no spaces or symbols.\n");
+            printf("Invalid account number! Use 8 to 34 letters/digits, no spaces or special characters.\n");
     } while (status == -1);
 
     // ------------------------------------------ Basic Salary ------------------------------------------
@@ -241,7 +241,7 @@ void input(void){
         if (status == 0)
             status = validate_basic_salary(e->basic_salary);
         if (status == -1)
-            printf("Invalid salary! Enter a number greater than 0.\n");
+            printf("Invalid salary entered! Enter a valid amount of Salary .\n");
     } while (status == -1);
 
     // -------------------------------------------- Allowance -------------------------------------------
@@ -251,7 +251,7 @@ void input(void){
         if (status == 0)                               // solely a float was given as input.
             status = validate_allowance(e->allowance);
         if (status == -1)                              // input had some other characters also apart from the number, so marked as invalid.
-            printf("Invalid allowance! Enter a number (0 or more).\n");
+            printf("Invalid allowance! Enter a valid amount of Allowance.\n");
     } while (status == -1);
 
     // ------------------------------------------- Overtime Pay -----------------------------------------
@@ -261,7 +261,7 @@ void input(void){
         if (status == 0)
             status = validate_overtime(e->overtime_pay);
         if (status == -1)
-            printf("Invalid overtime pay! Enter a number (0 or more).\n");
+            printf("Invalid overtime pay! Enter a valid amount of Overtime pay.\n");
     } while (status == -1);
 
     // ---------------------------------------------- Bonus ---------------------------------------------
@@ -271,7 +271,7 @@ void input(void){
         if (status == 0)
             status = validate_bonuses(e->bonuses);
         if (status == -1)
-            printf("Invalid bonus! Enter a number (0 or more).\n");
+            printf("Invalid bonus! Enter a valid amount of Bonus.\n");
     } while (status == -1);
 
     // ---------------------------------------------- Taxes ---------------------------------------------
@@ -281,7 +281,7 @@ void input(void){
         if (status == 0)
             status = validate_taxes(e->taxes, e->basic_salary + e->allowance + e->overtime_pay + e->bonuses);
         if (status == -1)
-            printf("Invalid taxes! Enter a number (0 or more) that doesn't exceed the gross salary.\n");
+            printf("Invalid taxes! Enter a valid amount of tax, that doesn't exceed the gross salary.\n");
     } while (status == -1);
 
     // Automatically calculate Net Salary
