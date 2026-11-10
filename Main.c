@@ -1,33 +1,34 @@
-#include<stdio.h>
-#include<string.h>
+#include <stdio.h>
+#include <string.h>
 #include <ctype.h>
-#include<math.h>
-#include<time.h>
+#include <math.h>
+#include <time.h>
+
 /*
-functions list:
-1) aik functions sarri details ko user se input lene ke liye --> Shehryar
-2) aik function add employee record ke liye jisme woh file open ho, 
-   input lene ka function call ho, woh data file mein append ho (append karna hai write nhi) 
-   aur file save hokar close hogaye with data validation --> Shehryar
-3) Aik function employee ko search karne ka based on employee id ---> Bilal
-4) Aik function sarre employees ko display karne ke liye ---> Qaim
-5) Aik function kisi particular employee ka record delete karne ke liye based on employee id --->Amin
-6) Aik function payslip generate karne ke liye --->Qaim
-7) Aik function kisi particular employee ka record update karne ke liye, 
-jis employee ka record update karna hoga user iski id dega --> Amin
-8) Exit ka code direct main mein likh deingy ---> Qaim
+Functions list:
+1) Input employee details -> Shehryar
+2) Add employee record -> Shehryar
+3) Search employee by ID -> Bilal
+4) Display all employees -> Qaim
+5) Delete employee by ID -> Amin
+6) Generate payslip -> Qaim
+7) Update employee by ID -> Amin
+8) Exit -> Qaim
 */
+
 #define Max_Employee 100
-#define CSV_FORMAT " %99[^,], %19[^,], %99[^,], %99[^,], %99[^,], %19[^,], %f, %49[^,], %49[^,], %f, %f, %f, %f, %f, %f"
-#define TABLE_WIDTH 117 /* Width of the table: the widest of the two lines each employee uses. */
-typedef struct{
+
+#define CSV_FORMAT " %99[^,], %19[^,], %99[^,], %99[^,], %99[^,], %19[^,], %49[^,], %49[^,], %f, %f, %f, %f, %f, %f"
+#define TABLE_WIDTH 109
+#define TAX_RATE 0.10f
+
+typedef struct {
     char name[100];
     char id[20];
     char designation[100];
     char department[100];
     char email[100];
     char date_joining[20];
-    float experience;
     char bank_name[50];
     char bank_account[50];
     float basic_salary;
@@ -36,546 +37,588 @@ typedef struct{
     float bonuses;
     float taxes;
     float net_salary;
-}Employee;
-    // GLOBAL VARIABLES.
-    Employee emp[Max_Employee];
-    int employee_count = 0;
+} Employee;
 
-    int search(char arr[]);
-    void load_data(void);
-    void display(int i);
-    void updateEmployee(void);
-    void deleteEmployee(void);
-    void savedata();
-    void input(void);
-    int add_employee (void);
-    void displayAllRecords(void);
-    void generatePayslip(void);
+/* Global variables */
+Employee emp[Max_Employee];
+int employee_count = 0;
 
-    // ----------- input helpers -----------------
+/* Function prototypes */
+int search(char arr[]);                             // searches for an employee in file and displays its entire data. 
+void load_data(void);                               // loads programs data from file into the memory (an array), and also determines no. of employees in the 
+void display(int i);                                // displays an employess data.
+void updateEmployee(void);                          // update an employees certain record field like email, department, etc.
+void deleteEmployee(void);                          // delete an employee record from file.
+void savedata(void);                                //
+void input(void);                                   // take valid input and return to add_employee to save in the file
+int add_employee(void);                             // writes input into the file and calls function load_data(), so memory is also updated accordingly.
+void displayAllRecords(void);                       // displays all records saved in the file.
+void generatePayslip(void);                         // generates pay slip for an employee, based on his id.
 
-    void clear_buffer(void);
-    int read_float(float *value);
-    int only_letters_and_spaces(const char *text);
+void clear_buffer(void);                            // clears input buffer, for safe next input.
+int read_float(float *value);                       // a function specifically designed to check that if a float is given as input only or not.
+int only_letters_and_spaces(const char *text);      // a function specifically designed to check that if only letters are given as input.
 
-    // ----------- field validators: each returns 0 if input is valid, -1 if invalid -------------
-    int validate_name(const char *name);
-    int validate_id(const char *id);
-    int validate_designation(const char *designation);
-    int validate_department(const char *department);
-    int validate_email(const char *email);
-    int validate_experience(float years);
-    int validate_bank_name(const char *bank_name);
-    int validate_bank_account(const char *account);
-    int validate_basic_salary(float amount);
-    int validate_allowance(float amount);
-    int validate_overtime(float amount);
-    int validate_bonuses(float amount);
-    int validate_taxes(float taxes, float gross_salary);
+// INPUT VALIDATORS (returns -1 for an invalid and 0 for a valid input.)  NOTE: it recieves input as an argument from input() function.
+int validate_name(const char *name);                 
+int validate_id(const char *id);
+int validate_designation(const char *designation);
+int validate_department(const char *department);
+int validate_email(const char *email);
+int validate_bank_name(const char *bank_name);
+int validate_bank_account(const char *account);
+int validate_basic_salary(float amount);
+int validate_allowance(float amount);
+int validate_overtime(float amount);
+int validate_bonuses(float amount);
 
-int main(){
+int main() {
     int option;
-    FILE *file = fopen("values.txt", "r");         
-    if (file != NULL) {
-        fscanf(file, "%d", &employee_count);
-        fclose(file);
-    }
-    
+
+    /* Load actual employee records from CSV.
+       load_data() is the only function that sets employee_count. */
     load_data();
+
     do {
-        printf("%110s\n","=== Employee Payroll Management System ===");
-        printf("\n%70s\n","1-Add a new employee");
-        printf("\n%80s\n","2-Display all employee records");
-        printf("\n%79s\n","3-Update an employee's record");
-        printf("\n%77s\n","4-Delete an employee record");
-        printf("\n%81s\n","5-Search for an employee record");
-        printf("\n%84s\n","6-Generate payslip for an employee");
-        printf("\n%83s\n","7-Exit from the management system");
-        printf("\n%81s","Which Option Do You Want to Choose: ");
-        scanf("%d",&option);
-        while (getchar() != '\n');
+        printf("%110s\n", "=== Employee Payroll Management System ===");
+        printf("\n%70s\n", "1-Add a new employee");
+        printf("\n%80s\n", "2-Display all employee records");
+        printf("\n%79s\n", "3-Update an employee's record");
+        printf("\n%77s\n", "4-Delete an employee record");
+        printf("\n%81s\n", "5-Search for an employee record");
+        printf("\n%84s\n", "6-Generate payslip for an employee");
+        printf("\n%83s\n", "7-Exit from the management system");
+        printf("\n%81s", "Which Option Do You Want to Choose: ");
 
-        // fetching no. of employees from file directly.
-
-        FILE *file;                                                           
-        file = fopen ("values.txt","r");         
-        if (file != NULL) {
-            fscanf(file, "%d", &employee_count);
-            fclose(file);
+        if (scanf("%d", &option) != 1) {
+            clear_buffer();
+            option = 0;
+        } else {
+            clear_buffer();
         }
 
         printf("Total no. of employees are: %d\n", employee_count);
 
-        switch (option)
-        {
-            case (1):{                          //Add a new employee's record
-                add_employee ();
+        switch (option) {
+            case 1:
+                add_employee();
                 break;
-            }
-            case (2):{                          //Display all employee records
+
+            case 2:
                 displayAllRecords();
                 break;
-            }
-            case (3): {                         //Update an employee's record
+
+            case 3:
                 updateEmployee();
                 break;
-            }
-            case (4):{                          //Delete an employee's record
+
+            case 4:
                 deleteEmployee();
                 break;
-            }
-            case (5):{                          //Search for a particular employee
+
+            case 5: {
                 char employid[20];
-                printf("Enter the employ id to search\n");
-                scanf(" %s",employid);
+
+                printf("Enter the employee ID to search: ");
+                scanf(" %19s", employid);
                 clear_buffer();
+
                 search(employid);
                 break;
             }
-            case (6):{
-                generatePayslip();                           //Generate a payslip for a particular employee  
+
+            case 6:
+                generatePayslip();
                 break;
-            }
-            case (7):{                           //Exit from management system
-                printf("\n Exiting From Management System Program");
+
+            case 7:
+                printf("\nExiting From Management System Program\n");
                 break;
-            }
+
             default:
-            printf("\n Invalid Option Chosen!");
+                printf("\nInvalid Option Chosen!\n");
         }
 
-    }while(option!=7);
+    } while (option != 7);
+
     return 0;
 }
 
-// =====================================================================================================
-//                                              INPUT
-// =====================================================================================================
-/*
-   Every field follows the same pattern:
-    takes the input ----------> validates it -----------> if invalid retakes input (status = -1)
-    continues until a valid input is given (status = 0)    
-*/
+/* =======================================================================
+                                INPUTS
+===================================================================== */
 
-void input(void){
-    Employee *e = &emp[employee_count];     // shortcut to the record currently being filled
-    int status;                             // indicates if input is valid or not (-1 for invalid, 0 for valid)
+void input(void) {
+    Employee *e = &emp[employee_count];               
+    int status;
 
     printf("Enter The Details as prompted\n");
 
-    // ---------------------------------------------- Name ------------------------------------------------------
+    /* Name */
     do {
         printf("\nName as per CNIC: ");
-        scanf(" %99[^\n]", e->name);        // %99 = max 99 characters (leave last index is for '\0'). [^\n] also reads spaces until enter.
-        clear_buffer();                     // throw away anything extra typed beyond the limit, so it doesn't leak into the next scanf.
+        scanf(" %99[^\n]", e->name);
+        clear_buffer();
+
         status = validate_name(e->name);
-        if (status == -1)
+
+        if (status == -1) {
             printf("Invalid name! Use letters only.\n");
+        }
     } while (status == -1);
 
-    // ----------------------------------------------- ID -----------------------------------------------
+    /* ID */
     do {
         printf("\nID: ");
         scanf(" %19[^\n]", e->id);
         clear_buffer();
+
         status = validate_id(e->id);
-        if (status == -1)
-            printf("Invalid ID! an ID can have letters, digits and hyphen ('-') only (no spaces also).\n");
+
+        if (status == -1) {
+            printf("Invalid ID! An ID can have letters, digits and hyphen ('-') only.\n");
+        }
     } while (status == -1);
 
-    // ------------------------------------------- Designation ------------------------------------------
+    /* Designation */
     do {
         printf("\nEmployee Designation: ");
         scanf(" %99[^\n]", e->designation);
         clear_buffer();
+
         status = validate_designation(e->designation);
-        if (status == -1)
+
+        if (status == -1) {
             printf("Invalid designation entered! Use letters only.\n");
+        }
     } while (status == -1);
 
-    // -------------------------------------------- Department ------------------------------------------
+    /* Department */
     do {
         printf("\nDepartment: ");
         scanf(" %99[^\n]", e->department);
         clear_buffer();
+
         status = validate_department(e->department);
-        if (status == -1)
+
+        if (status == -1) {
             printf("Invalid department! Use letters only.\n");
+        }
     } while (status == -1);
 
-    // ---------------------------------------------- Email ---------------------------------------------
+    /* Email */
     do {
         printf("\nEmail: ");
         scanf(" %99[^\n]", e->email);
         clear_buffer();
+
         status = validate_email(e->email);
-        if (status == -1)
-            printf("Invalid email entered! wrong format.\n");
+
+        if (status == -1) {
+            printf("Invalid email entered! Wrong format.\n");
+        }
     } while (status == -1);
 
-    // ------------------------------------------- Joining Date -----------------------------------------
-    // (not validated)
+    /* Joining Date */
     printf("\nJoining Date strictly in format (dd/mm/yy): ");
     scanf(" %19[^\n]", e->date_joining);
     clear_buffer();
 
-    // ------------------------------------------- Experience -------------------------------------------
-    do {
-        printf("\nExperience of employee (in years): ");
-        status = read_float(&e->experience);                       // -1 if the user typed something that isn't a number
-        if (status == 0)
-            status = validate_experience(e->experience);
-        if (status == -1)
-            printf("Invalid experience! Enter a number between 0 and 60.\n");
-    } while (status == -1);
-
-    // ------------------------------------------- Bank Name --------------------------------------------
+    /* Bank Name */
     do {
         printf("\nBank Name: ");
         scanf(" %49[^\n]", e->bank_name);
         clear_buffer();
+
         status = validate_bank_name(e->bank_name);
-        if (status == -1)
-            printf("Invalid bank name! Bank  name consists of letters only.\n");
+
+        if (status == -1) {
+            printf("Invalid bank name! Bank name consists of letters only.\n");
+        }
     } while (status == -1);
 
-    // ---------------------------------------- Bank Account No. ----------------------------------------
+    /* Bank Account Number */
     do {
         printf("\nBank Account Number: ");
         scanf(" %49[^\n]", e->bank_account);
         clear_buffer();
+
         status = validate_bank_account(e->bank_account);
-        if (status == -1)
+
+        if (status == -1) {
             printf("Invalid account number! Use 8 to 34 letters/digits, no spaces or special characters.\n");
+        }
     } while (status == -1);
 
-    // ------------------------------------------ Basic Salary ------------------------------------------
+    /* Basic Salary */
     do {
         printf("\nBasic Salary (in PKR): ");
         status = read_float(&e->basic_salary);
-        if (status == 0)
+
+        if (status == 0) {
             status = validate_basic_salary(e->basic_salary);
-        if (status == -1)
-            printf("Invalid salary entered! Enter a valid amount of Salary .\n");
+        }
+
+        if (status == -1) {
+            printf("Invalid salary entered! Enter a valid amount of salary.\n");
+        }
     } while (status == -1);
 
-    // -------------------------------------------- Allowance -------------------------------------------
+    /* Allowance */
     do {
-        printf("\nAllowance (in PKR) : ");
-        status = read_float(&(*e).allowance);
-        if (status == 0)                               // solely a float was given as input.
+        printf("\nAllowance (in PKR): ");
+        status = read_float(&e->allowance);
+
+        if (status == 0) {
             status = validate_allowance(e->allowance);
-        if (status == -1)                              // input had some other characters also apart from the number, so marked as invalid.
-            printf("Invalid allowance! Enter a valid amount of Allowance.\n");
+        }
+
+        if (status == -1) {
+            printf("Invalid allowance! Enter a valid amount of allowance.\n");
+        }
     } while (status == -1);
 
-    // ------------------------------------------- Overtime Pay -----------------------------------------
+    /* Overtime Pay */
     do {
         printf("\nOvertime Pay (in PKR): ");
         status = read_float(&e->overtime_pay);
-        if (status == 0)
+
+        if (status == 0) {
             status = validate_overtime(e->overtime_pay);
-        if (status == -1)
-            printf("Invalid overtime pay! Enter a valid amount of Overtime pay.\n");
+        }
+
+        if (status == -1) {
+            printf("Invalid overtime pay! Enter a valid amount of overtime pay.\n");
+        }
     } while (status == -1);
 
-    // ---------------------------------------------- Bonus ---------------------------------------------
+    /* Bonus */
     do {
         printf("\nBonus (in PKR): ");
         status = read_float(&e->bonuses);
-        if (status == 0)
+
+        if (status == 0) {
             status = validate_bonuses(e->bonuses);
-        if (status == -1)
-            printf("Invalid bonus! Enter a valid amount of Bonus.\n");
+        }
+
+        if (status == -1) {
+            printf("Invalid bonus! Enter a valid amount of bonus.\n");
+        }
     } while (status == -1);
 
-    // ---------------------------------------------- Taxes ---------------------------------------------
-    do {
-        printf("\nTaxes (in PKR): ");
-        status = read_float(&e->taxes);
-        if (status == 0)
-            status = validate_taxes(e->taxes, e->basic_salary + e->allowance + e->overtime_pay + e->bonuses);
-        if (status == -1)
-            printf("Invalid taxes! Enter a valid amount of tax, that doesn't exceed the gross salary.\n");
-    } while (status == -1);
+    /* Tax is fixed at 10% of basic salary */
+    e->taxes = e->basic_salary * TAX_RATE;
 
-    // Automatically calculate Net Salary
+    /* Calculate net salary */
     e->net_salary = e->basic_salary + e->allowance + e->overtime_pay + e->bonuses - e->taxes;
 }
 
-int add_employee(void) {                                                        
-    if (employee_count < Max_Employee) {               // CHECKING IF ANY MORE EMPLOYEES CAN BE ADDED 
+/* =====================================================================
+                            ADD EMPLOYEE
+===================================================================== */
 
-        input();                                       // TAKING INPUT (every field is already validated inside input()).
-        
-        FILE *fp;
-        fp = fopen("Employee Payroll Records.csv", "a");                     // OPENING FILE IN APPEND MODE.
-        if (fp != NULL) {                                                    // FILE ERROR.
+int add_employee(void) {
+    FILE *fp;
 
-            // APPENDING INPUT TAKEN FROM STRUCTURE TO THE CSV FILE. 
-            fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",  
-                emp[employee_count].name, emp[employee_count].id, emp[employee_count].designation, 
-                emp[employee_count].department, emp[employee_count].email, emp[employee_count].date_joining, 
-                emp[employee_count].experience, emp[employee_count].bank_name, emp[employee_count].bank_account, 
-                emp[employee_count].basic_salary, emp[employee_count].allowance, emp[employee_count].overtime_pay, 
-                emp[employee_count].bonuses, emp[employee_count].taxes, emp[employee_count].net_salary);
- 
-            employee_count++ ;                                                // 1 EMPLOYEE ADDED.
-            
-            fclose(fp);        
-
-            fp = fopen("values.txt", "w");                                    // Storing no. of employees permanently in a file.
-            if (fp != NULL) {
-                fprintf(fp, "%d", employee_count);
-                fclose(fp);
-                printf("\nEmployee appended successfully in the file!\n");
-                return 0;
-            }
-            return -1;                                                        // couldn't update values.txt
-
-        } else {
-            printf("\nError! unable to open file!\n");                        // FP = NULL
-            return -1;
-        }
-    } else {
-        printf("\nMaximum employee limit has been reached, no more employee entry possible.\n");                  // employee_count = MAX_EMPLOYEE
+    if (employee_count >= Max_Employee) {
+        printf("\nMaximum employee limit has been reached, no more employee entry possible.\n");
         return -1;
     }
+
+    input();
+
+    fp = fopen("Employee Payroll Records.csv", "a");
+
+    if (fp == NULL) {
+        printf("\nError! Unable to open employee records file.\n");
+        return -1;
+    }
+
+    fprintf(fp, "%s, %s, %s, %s, %s, %s, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+        emp[employee_count].name,
+        emp[employee_count].id,
+        emp[employee_count].designation,
+        emp[employee_count].department,
+        emp[employee_count].email,
+        emp[employee_count].date_joining,
+        emp[employee_count].bank_name,
+        emp[employee_count].bank_account,
+        emp[employee_count].basic_salary,
+        emp[employee_count].allowance,
+        emp[employee_count].overtime_pay,
+        emp[employee_count].bonuses,
+        emp[employee_count].taxes,
+        emp[employee_count].net_salary);
+
+    fclose(fp);
+
+    /* Increase count only after the employee has been successfully appended */
+    employee_count++;
+
+    printf("\nEmployee appended successfully in the file!\n");
+    return 0;
 }
 
-// =====================================================================================================
-//                                           INPUT HELPERS
-// =====================================================================================================
+/* =====================================================================
+                            INPUT HELPERS
+===================================================================== */
 
-// Discards everything left in the input buffer up to and including the next '\n'.
-void clear_buffer(void){
+void clear_buffer(void) {
     int c;
+
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-// Reads one float from the user. Returns 0 on success, -1 if the input wasn't a proper number
-// (e.g. "abc" or "12abc"). Always leaves the input buffer clean, so the retry loop can't get stuck.
-int read_float(float *value){
+int read_float(float *value) {
     int c;
 
-    if (scanf(" %f", value) != 1) {         // sth numeric red so scanf returned 1 ---> (1 != 1) --> condition false --> buffer not cleared.
-        clear_buffer();                     // if nothing numeric red by scanf(),---> scanf() returns 0 ---> condition true ---> then it clears the buffer. 
-        return -1;                          // if input is sth like "12abc\n", then scanf reads 12 but abc\n remains in buffer and needs to be removed.
-    }
-    // if input is sth like "12abc\n", then scanf reads 12 but abc\n remains in buffer and needs to be removed.
-    
-    while ((c = getchar()) == ' ' || c == '\t');     // removes any trailing spaces '    ' from buffer.
-    if (c != '\n' && c != EOF) {                     // Since, neither a new line nor end of buffer --> condition true --> clear the buffer
+    if (scanf(" %f", value) != 1) {
         clear_buffer();
-        return -1;                                   // also return -1, to indicate to input() function that the input was not puerly correct.
-    } 
+        return -1;
+    }
+
+    while ((c = getchar()) == ' ' || c == '\t');
+
+    if (c != '\n' && c != EOF) {
+        clear_buffer();
+        return -1;
+    }
+
     return 0;
 }
 
-// This function is used by name, designation, department and bank name:
-// only letters and spaces are allowed, and at least one letter must be present.
-int only_letters_and_spaces(const char *text){
+int only_letters_and_spaces(const char *text) {
     int i;
 
     for (i = 0; text[i] != '\0'; i++) {
-        // Cast to unsigned char to safely handle negative extended ASCII values.
-        if (isalpha((unsigned char)text[i]) == 0 && text[i] != ' ')    // use of unsigned char removes the sign bit, so safe comparison, no crash in program.
-            return -1;                                                 // isalpha() checks whether a character is a letter (returns 0 if not a letter).
+        if (isalpha((unsigned char)text[i]) == 0 && text[i] != ' ') {
+            return -1;
+        }
     }
 
     return 0;
 }
 
-// =====================================================================================================
-//                                        FIELD VALIDATORS
-//                                  return 0 = valid, -1 = invalid
-// =====================================================================================================
+/* =====================================================================
+                            VALIDATORS
+===================================================================== */
 
-int validate_name(const char *name){
+int validate_name(const char *name) {
     return only_letters_and_spaces(name);
 }
 
-int validate_id(const char *id){
+int validate_id(const char *id) {
     int i;
 
-    if (id[0] == '\0')
+    if (id[0] == '\0') {
         return -1;
-    for (i = 0; id[i] != '\0'; i++) {
-        if (isalnum((unsigned char)id[i]) == 0 && id[i] != '-')         // isalnum checks for a letter or digit (returns 0 if not a letter or digit).
-            return -1;                                                  // given an exception of hyphen '-' in id.
     }
+
+    for (i = 0; id[i] != '\0'; i++) {
+        if (isalnum((unsigned char)id[i]) == 0 && id[i] != '-') {
+            return -1;
+        }
+    }
+
     return 0;
 }
 
-int validate_designation(const char *designation){
+int validate_designation(const char *designation) {
     return only_letters_and_spaces(designation);
 }
 
-int validate_department(const char *department){
+int validate_department(const char *department) {
     return only_letters_and_spaces(department);
 }
 
-int validate_email(const char *email){
+int validate_email(const char *email) {
     int i;
+    const char *at;
+    const char *dot;
 
-    if (strlen(email) < 5)                              // email can't be of less than 5 characters logically (a@b.c).
+    if (strlen(email) < 5) {
         return -1;
-
-    for (i = 0; i < strlen(email); i++) {               // there should be no spaces in email.
-        if (isspace((unsigned char)email[i]) )          // if a space in email, isspace() returns 1, condition satisfies, so an invalid input.
-            return -1;
     }
 
-    const char *at = strchr(email, '@');                // strchr scans through the email string left to right, looking for the @ character. 
-    if (at == NULL)                                     // unsigned char removes the sign bit, so safe comparison, no crash in program.
-        return -1;                                      // If it doesn't find the @, it returns NULL (which means "nothing found").
+    for (i = 0; i < (int)strlen(email); i++) {
+        if (isspace((unsigned char)email[i])) {
+            return -1;
+        }
+    }
 
-    if (strchr(at + 1, '@') != NULL)                    // there should be only ONE '@' symbol
-        return -1;
+    at = strchr(email, '@');
 
-    if (at == email)                                    // the '@' cannot be the first character
+    if (at == NULL) {
         return -1;
+    }
 
-    const char *dot = strchr(at + 1, '.');              // email must have a dot '.' somewhere after the '@'
-    if (dot == NULL)
+    if (strchr(at + 1, '@') != NULL) {
         return -1;
+    }
 
-    if (dot == at + 1)                                  // the '.' can't be immediately after the '@' (e.g. user@.com)
+    if (at == email) {
         return -1;
+    }
 
-    if (email[strlen(email) - 1] == '.')                          // the '.' cannot be the very last character
+    dot = strchr(at + 1, '.');
+
+    if (dot == NULL) {
         return -1;
+    }
+
+    if (dot == at + 1) {
+        return -1;
+    }
+
+    if (email[strlen(email) - 1] == '.') {
+        return -1;
+    }
 
     return 0;
 }
 
-int validate_experience(float years){
-    if (years < 0 || years > 60)
-        return -1;
-    return 0;
-}
-
-int validate_bank_name(const char *bank_name){
+int validate_bank_name(const char *bank_name) {
     return only_letters_and_spaces(bank_name);
 }
 
-int validate_bank_account(const char *account){
+int validate_bank_account(const char *account) {
     int i;
 
-    if (strlen(account) < 8 || strlen(account) > 34)                  // account no. / IBAN length range 
+    if (strlen(account) < 8 || strlen(account) > 34) {
         return -1;
-    for (i = 0; i < strlen(account); i++) {
-        if (!isalnum((unsigned char)account[i]))
-            return -1;
     }
+
+    for (i = 0; i < (int)strlen(account); i++) {
+        if (!isalnum((unsigned char)account[i])) {
+            return -1;
+        }
+    }
+
     return 0;
 }
 
-int validate_basic_salary(float amount){
-    
-    if (amount <= 0)                                    // basic salary must be positive
+int validate_basic_salary(float amount) {
+    if (amount <= 0) {
         return -1;
+    }
+
     return 0;
 }
 
-int validate_allowance(float amount){
-
-    if (amount < 0)
+int validate_allowance(float amount) {
+    if (amount < 0) {
         return -1;
-    return 0;
+    }
 
-}
-
-int validate_overtime(float amount){
-    if (amount < 0)
-        return -1;
     return 0;
 }
 
-int validate_bonuses(float amount){
-    if (amount < 0)
+int validate_overtime(float amount) {
+    if (amount < 0) {
         return -1;
+    }
+
     return 0;
 }
 
-int validate_taxes(float taxes, float gross_salary){
-    
-    if (taxes < 0)
+int validate_bonuses(float amount) {
+    if (amount < 0) {
         return -1;
-    if (taxes > gross_salary)                           // otherwise the net salary would become negative
-        return -1;
+    }
+
     return 0;
 }
- int search(char employid[])
-{
+
+/* =====================================================================
+                            SEARCH / DISPLAY
+===================================================================== */
+
+int search(char employid[]) {
     int i;
-    for (i=0; i < employee_count; i++)
-    {
-        if( strcmp( emp[i].id, employid) == 0)
-         {
+
+    for (i = 0; i < employee_count; i++) {
+        if (strcmp(emp[i].id, employid) == 0) {
             display(i);
             return i;
-         }
-
+        }
     }
-        printf("Wrong ID Data Not Found\n");
-         return -1;
+
+    printf("Wrong ID. Data Not Found\n");
+    return -1;
 }
 
-
-void display(int i)
-{
-        printf("Name:%s",emp[i].name);
-        printf("\nID:%s",emp[i].id);
-        printf("\nDesignation:%s",emp[i].designation);
-        printf("\nDepartment:%s",emp[i].department);
-        printf("\nEmail:%s",emp[i].email);
-        printf("\nJoining Date:%s",emp[i].date_joining);
-        printf("\nExperience:%f",emp[i].experience);
-        printf("\nBank Name:%s",emp[i].bank_name);
-        printf("\nBank Account:%s",emp[i].bank_account);
-        printf("\nBasic Salary:%f",emp[i].basic_salary);
-        printf("\nAllowance:%f",emp[i].allowance);
-        printf("\nOvertime Pay:%f",emp[i].overtime_pay);
-        printf("\nBonus:%f",emp[i].bonuses);
-        printf("\nTaxes:%f",emp[i].taxes);
-        printf("\nFinal Salary:%f",emp[i].net_salary);
+void display(int i) {
+    printf("Name: %s\n", emp[i].name);
+    printf("ID: %s\n", emp[i].id);
+    printf("Designation: %s\n", emp[i].designation);
+    printf("Department: %s\n", emp[i].department);
+    printf("Email: %s\n", emp[i].email);
+    printf("Joining Date: %s\n", emp[i].date_joining);
+    printf("Bank Name: %s\n", emp[i].bank_name);
+    printf("Bank Account: %s\n", emp[i].bank_account);
+    printf("Basic Salary: %.2f\n", emp[i].basic_salary);
+    printf("Allowance: %.2f\n", emp[i].allowance);
+    printf("Overtime Pay: %.2f\n", emp[i].overtime_pay);
+    printf("Bonus: %.2f\n", emp[i].bonuses);
+    printf("Taxes: %.2f\n", emp[i].taxes);
+    printf("Final Salary: %.2f\n", emp[i].net_salary);
 }
-   void savedata() {
-    FILE *fp = fopen("Employee Payroll Records.csv", "w");
+
+/* =====================================================================
+                            SAVE DATA
+===================================================================== */
+
+void savedata(void) {
+    FILE *fp;
+    int i;
+    fp = fopen("Employee Payroll Records.csv", "w");
+
     if (fp != NULL) {
-        for (int i = 0; i < employee_count; i++) {
-            fprintf(fp, "%s, %s, %s, %s, %s, %s, %.2f, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", 
-                emp[i].name, emp[i].id, emp[i].designation, 
-                emp[i].department, emp[i].email, emp[i].date_joining, 
-                emp[i].experience, emp[i].bank_name, emp[i].bank_account, 
-                emp[i].basic_salary, emp[i].allowance, emp[i].overtime_pay, 
-                emp[i].bonuses, emp[i].taxes, emp[i].net_salary);
+        for (i = 0; i < employee_count; i++) {
+            fprintf(fp, "%s, %s, %s, %s, %s, %s, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+                emp[i].name,
+                emp[i].id,
+                emp[i].designation,
+                emp[i].department,
+                emp[i].email,
+                emp[i].date_joining,
+                emp[i].bank_name,
+                emp[i].bank_account,
+                emp[i].basic_salary,
+                emp[i].allowance,
+                emp[i].overtime_pay,
+                emp[i].bonuses,
+                emp[i].taxes,
+                emp[i].net_salary);
         }
         fclose(fp);
     }
-FILE *v_fp = fopen("values.txt", "w");
-    if (v_fp != NULL) {
-        fprintf(v_fp, "%d", employee_count);
-        fclose(v_fp);
-    }
 }
+
+/* =====================================================================
+                            DELETE EMPLOYEE
+===================================================================== */
+
 void deleteEmployee(void) {
     char delete_id[20];
-    int index = -1;
+    int index;
+    char confirm;
+
     printf("Enter employee ID to delete: ");
     scanf("%19s", delete_id);
-    while (getchar() != '\n'); 
+    clear_buffer();
 
-    index = search(delete_id); 
+    index = search(delete_id);
 
     if (index == -1) {
-        printf("Employee not found. Deletion Cancelled.\n");
+        printf("Employee not found. Deletion cancelled.\n");
         return;
     }
-    char confirm;
+
     printf("\nAre you sure you want to permanently delete this employee? (y/n): ");
     scanf(" %c", &confirm);
+    clear_buffer();
+
     if (confirm != 'y' && confirm != 'Y') {
         printf("Deletion cancelled.\n");
         return;
@@ -586,101 +629,246 @@ void deleteEmployee(void) {
     }
 
     employee_count--;
-    savedata(); 
+
+    savedata();
+
     printf("Employee deleted successfully.\n");
 }
 
+/* =====================================================================
+                            UPDATE EMPLOYEE
+===================================================================== */
 void updateEmployee(void) {
     char search_id[20];
-    int index = -1;
+    int index;
     int choice;
+    int status;
 
     printf("Enter employee ID to update: ");
     scanf("%19s", search_id);
-    while (getchar() != '\n');
+    clear_buffer();
 
     index = search(search_id);
 
     if (index == -1) {
-        printf("Employee not found. Updation Cancelled.\n");
+        printf("Employee not found. Updation cancelled.\n");
         return;
     }
-do {
-    printf("\n=== Update Fields for %s ===", emp[index].name);
-    printf("\n1. Update Designation");
-    printf("\n2. Update Department");
-    printf("\n3. Update Email");
-    printf("\n4. Update Experience (Years)");
-    printf("\n5. Update Basic Salary");
-    printf("\nChoose a field to update (1-5) press '0' to exit: ");
-    scanf("%d", &choice);
-    while (getchar() != '\n');
 
-    switch (choice) {
-        case 1:
-        {
-            printf("Enter new Designation: ");
-            scanf("%99[^\n]", emp[index].designation);
-            savedata();
-            printf("Designation updated and saved successfully!\n");
-            break; }
-        case 2:
-        {
-            printf("Enter new Department: ");
-            scanf("%99[^\n]", emp[index].department);
-            savedata();
-            printf("Department updated and saved successfully!\n");
-            break; }
-        case 3:
-        {
-            printf("Enter new Email: ");
-            scanf("%99s", emp[index].email);
-            savedata();
-            printf("Email updated and saved successfully!\n");
-            break; }
-        case 4:
-        {
-            printf("Enter updated Experience (years): ");
-            scanf("%f", &emp[index].experience);
-            savedata();
-            printf("Experience updated and saved successfully!\n");
-            break; }
-        case 5:
-        {
-            printf("Enter new Basic Salary: ");
-            scanf("%f", &emp[index].basic_salary);
-            emp[index].net_salary = emp[index].basic_salary + emp[index].allowance + emp[index].bonuses + emp[index].overtime_pay - emp[index].taxes;
-            savedata();
-            printf("Salary updated and saved successfully!\n");
-            break; }
+    do {
+        printf("\n=== Update Fields for %s ===\n", emp[index].name);
+        printf("1. Update Designation\n");
+        printf("2. Update Department\n");
+        printf("3. Update Email\n");
+        printf("4. Update Bank Name\n");
+        printf("5. Update Bank Account Number\n");
+        printf("6. Update Basic Salary\n");
+        printf("7. Update Allowance\n");
+        printf("8. Update Bonus\n");
+        printf("9. Update Overtime Pay\n");
+        printf("Choose a field to update (1-9), press 0 to exit: ");
+
+        if (scanf("%d", &choice) != 1) {
+            clear_buffer();
+            choice = -1;
+        } else {
+            clear_buffer();
+        }
+
+        switch (choice) {
+            case 1:
+                printf("\nEnter Employee Designation: ");
+                scanf(" %99[^\n]", emp[index].designation);
+                clear_buffer();
+                status = validate_designation(emp[index].designation);
+
+                if (status == -1) {
+                    printf("Invalid designation entered! No changes were made (Use letters only).\n");
+                    break;
+                }   
+                savedata();
+                printf("Designation updated and saved successfully!\n");
+                break;
+
+            case 2:
+                printf("\nEnter Employee Department: ");
+                scanf(" %99[^\n]", emp[index].department);
+                clear_buffer();
+                status = validate_department(emp[index].department);
+
+                if (status == -1) {
+                    printf("Invalid department entered! No changes were made (Use letters only).\n");
+                    break;
+                }   
+                savedata();
+                printf("Department updated and saved successfully!\n");
+                break;
+
+            case 3: 
+                printf("\nEnter Employee Email: ");
+                scanf(" %99[^\n]", emp[index].email);
+                clear_buffer();
+                status = validate_email(emp[index].email);
+
+                if (status == -1) {
+                    printf("Invalid Email entered! No changes were made (Wrong format).\n");
+                    break;
+                }   
+                savedata();
+                printf("Email updated and saved successfully!\n");
+                break;
+            case 4: {
+                char temp_bank[50];
+                char temp_acc[50];
+                printf("\nEnter Employee Bank Name: ");
+                scanf(" %49[^\n]", temp_bank);
+                clear_buffer();
+                if (validate_bank_name(temp_bank) == -1) {
+                    printf("Invalid bank name! Bank name consists of letters only. No changes made.\n");
+                    break;
+                }   
+                printf("\nEnter Employee Bank Account Number: ");
+                scanf(" %49[^\n]", temp_acc);
+                clear_buffer();
+                if (validate_bank_account(temp_acc) == -1) {
+                    printf("Invalid account number! Use 8 to 34 letters/digits. No changes made.\n");
+                    break;
+                }   
+                // Both validated successfully, now update memory and save
+                strcpy(emp[index].bank_name, temp_bank);
+                strcpy(emp[index].bank_account, temp_acc);
+                savedata();
+                printf("Bank Name and Account number updated and saved successfully!\n");
+                break;
+            }
+            case 5:
+                printf("\nEnter Employee Bank Account Number: ");
+                scanf(" %49[^\n]", emp[index].bank_account);
+                clear_buffer();
+                status = validate_bank_account(emp[index].bank_account);
+
+                if (status == -1) {
+                    printf("Invalid account number! Use 8 to 34 letters/digits, no spaces or special characters.\n");
+                    break;           
+                }   
+                savedata();
+                printf("Bank Account Number updated and saved successfully!\n");
+                break;
+
+            case 6:
+                printf("Enter new Basic Salary (in PKR): ");
+                if (read_float(&emp[index].basic_salary) == 0 &&
+                    validate_basic_salary(emp[index].basic_salary) == 0) {
+
+                    emp[index].taxes = emp[index].basic_salary * TAX_RATE;
+
+                    emp[index].net_salary =
+                        emp[index].basic_salary +
+                        emp[index].allowance +
+                        emp[index].overtime_pay +
+                        emp[index].bonuses -
+                        emp[index].taxes;
+
+                    savedata();
+                    printf("Salary updated and saved successfully!\n");
+                } else {
+                    printf("Invalid salary entered! No changes were made.\n");
+                }
+                break;
+                
+            case 7:
+                printf("\nEnter new Allowance (in PKR): ");
+                if (read_float(&emp[index].allowance) == 0 &&
+                    validate_allowance(emp[index].allowance) == 0) {
+
+                    emp[index].net_salary =
+                        emp[index].basic_salary +
+                        emp[index].allowance +
+                        emp[index].overtime_pay +
+                        emp[index].bonuses -
+                        emp[index].taxes;
+
+                    savedata();
+                    printf("Allowance updated and saved successfully!\n");
+                } else {
+                    printf("Invalid Allowance entered! No changes were made.\n");
+                }  
+                break;
+
+            case 8:
+                printf("\nEnter new Bonus amount (in PKR): ");
+                if (read_float(&emp[index].bonuses) == 0 &&
+                    validate_bonuses(emp[index].bonuses) == 0) {
+
+                    emp[index].net_salary =
+                        emp[index].basic_salary +
+                        emp[index].allowance +
+                        emp[index].overtime_pay +
+                        emp[index].bonuses -
+                        emp[index].taxes;
+
+                    savedata();
+                    printf("Bonus updated and saved successfully!\n");
+                } else {
+                    printf("Invalid Bonus entered! No changes were made.\n");
+                }  
+                break;
+
+            case 9:
+                printf("\nEnter Overtime Pay (in PKR): ");
+                if (read_float(&emp[index].overtime_pay) == 0 &&
+                    validate_overtime(emp[index].overtime_pay) == 0) {
+
+                    emp[index].net_salary =
+                        emp[index].basic_salary +
+                        emp[index].allowance +
+                        emp[index].overtime_pay +
+                        emp[index].bonuses -
+                        emp[index].taxes;
+
+                    savedata();
+                    printf("Overtime updated and saved successfully!\n");
+                } else {
+                    printf("Invalid Overtime pay entered! No changes were made.\n");
+                }  
+                break;
+
             case 0:
-            {
-            printf("Exiting Update Menu");
-            break; }
-        default:
-            printf("Invalid choice! No changes were made.\n");
-    }
-}while(choice!= 0);
+                printf("Exiting Update Menu\n");
+                break;
+                
+            default:
+                printf("Invalid choice! No changes were made.\n");
+        }
+    } while (choice != 0);
 }
-void load_data(void) {      //LOADS DATA AT STARTUP INTO THE MEMORY
-    FILE *fp = fopen("Employee Payroll Records.csv", "r");
+
+/* =====================================================================
+                            LOAD DATA
+===================================================================== */
+
+void load_data(void) {
+    FILE *fp;
+    char line[1024];
+    int matched;
+
+    fp = fopen("Employee Payroll Records.csv", "r");
+
     if (fp == NULL) {
         employee_count = 0;
         return;
     }
 
     employee_count = 0;
-    char line[1024];
-    while (fgets(line, sizeof(line), fp) != NULL && employee_count < Max_Employee) {
 
-        int matched = sscanf(line, " %99[^,], %19[^,], %99[^,], %99[^,], %99[^,], %19[^,], %f, %49[^,], %49[^,], %f, %f, %f, %f, %f, %f",
+    while (fgets(line, sizeof(line), fp) != NULL && employee_count < Max_Employee) {
+        matched = sscanf(line, CSV_FORMAT,
             emp[employee_count].name,
             emp[employee_count].id,
             emp[employee_count].designation,
             emp[employee_count].department,
             emp[employee_count].email,
             emp[employee_count].date_joining,
-            &emp[employee_count].experience,
             emp[employee_count].bank_name,
             emp[employee_count].bank_account,
             &emp[employee_count].basic_salary,
@@ -690,163 +878,200 @@ void load_data(void) {      //LOADS DATA AT STARTUP INTO THE MEMORY
             &emp[employee_count].taxes,
             &emp[employee_count].net_salary);
 
-        if (matched == 15) {
+        if (matched == 14) {
             employee_count++;
         }
     }
+
     fclose(fp);
 }
-void skipHeader(FILE *fp)
-{
+
+/* =====================================================================
+                            DISPLAY ALL RECORDS
+===================================================================== */
+
+void skipHeader(FILE *fp) {
     char line[800];
- 
-    if (fgets(line, sizeof(line), fp) == NULL || strstr(line, "NAME,ID") == NULL)
+
+    if (fgets(line, sizeof(line), fp) == NULL || strstr(line, "NAME,ID") == NULL) {
         rewind(fp);
+    }
 }
- 
-/* Prints a row of dashes followed by a newline. */
-void printLine(int length)
-{
+
+void printLine(int length) {
     int i;
-    for (i = 0; i < length; i++)
+
+    for (i = 0; i < length; i++) {
         putchar('-');
+    }
+
     putchar('\n');
 }
- 
-/* Width of the table: the widest of the two lines each employee uses. */
 
- 
-/* Reads the CSV from start to end. Each employee is shown on two lines so the
-   table fits on screen: line 1 = personal details, line 2 = bank and pay. */
-void displayAllRecords(void)
-{
-    FILE *fp = fopen("Employee Payroll Records.csv", "r");
+void displayAllRecords(void) {
+    FILE *fp;
     Employee e;
     int count = 0;
- 
-    if (fp == NULL)
-    {
+
+    fp = fopen("Employee Payroll Records.csv", "r");
+
+    if (fp == NULL) {
         printf("\nNo records file found.\n");
         printf("\nPress Enter to return to the menu...");
-        getchar();
+        clear_buffer();
         return;
     }
- 
-    skipHeader(fp);                                     /* ignore the column-names line */
- 
+
+    skipHeader(fp);
+
     printf("\n");
     printLine(TABLE_WIDTH);
-    printf("%-20s %-10s %-16s %-14s %-26s %-15s %10s\n",
-           "NAME", "ID", "ROLE", "DEPARTMENT", "EMAIL", "DATE OF JOINING", "EXPERIENCE");
+
+    printf("%-20s %-10s %-16s %-14s %-26s %-15s\n",
+        "NAME", "ID", "ROLE", "DEPARTMENT", "EMAIL", "DATE OF JOINING");
+
     printf("%-20s %-16s %12s %10s %12s %10s %10s %12s\n",
-           "BANK NAME", "BANK ACCOUNT", "BASIC SALARY", "ALLOWANCE",
-           "OVERTIME PAY", "TAXES", "BONUSES", "NET SALARY");
+        "BANK NAME", "BANK ACCOUNT", "BASIC SALARY", "ALLOWANCE",
+        "OVERTIME PAY", "TAXES", "BONUSES", "NET SALARY");
+
     printLine(TABLE_WIDTH);
- 
-    /* fscanf returns how many fields it read; 15 means a complete record */
+
     while (fscanf(fp, CSV_FORMAT,
-                  e.name, e.id, e.designation, e.department, e.email,
-                  e.date_joining, &e.experience, e.bank_name, e.bank_account,
-                  &e.basic_salary, &e.allowance, &e.overtime_pay,
-                  &e.bonuses, &e.taxes, &e.net_salary) == 15)
-    {
+        e.name, e.id, e.designation, e.department, e.email,
+        e.date_joining, e.bank_name, e.bank_account,
+        &e.basic_salary, &e.allowance, &e.overtime_pay,
+        &e.bonuses, &e.taxes, &e.net_salary) == 14) {
+
         count++;
-        printf("%-20.20s %-10.10s %-16.16s %-14.14s %-26.26s %-15.15s %10.1f\n",
-               e.name, e.id, e.designation, e.department, e.email,
-               e.date_joining, e.experience);
+
+        printf("%-20.20s %-10.10s %-16.16s %-14.14s %-26.26s %-15.15s\n",
+            e.name, e.id, e.designation, e.department, e.email, e.date_joining);
+
         printf("%-20.20s %-16.16s %12.2f %10.2f %12.2f %10.2f %10.2f %12.2f\n",
-               e.bank_name, e.bank_account, e.basic_salary, e.allowance,
-               e.overtime_pay, e.taxes, e.bonuses, e.net_salary);
+            e.bank_name, e.bank_account, e.basic_salary, e.allowance,
+            e.overtime_pay, e.taxes, e.bonuses, e.net_salary);
+
         printLine(TABLE_WIDTH);
     }
+
     fclose(fp);
- 
-    if (count == 0)
+
+    if (count == 0) {
         printf("No employee records found.\n");
-    else
+    } else {
         printf("Total employees: %d\n", count);
- 
+    }
+
     printf("\nPress Enter to return to the menu...");
-    getchar();                      /* waits for Enter (main must clear the leftover newline first) */
+    clear_buffer();
 }
- 
-/* Asks for an ID, finds that employee in the CSV and prints a payslip. */
-void generatePayslip(void)
-{
+
+/* =====================================================================
+                            GENERATE PAYSLIP
+===================================================================== */
+
+void generatePayslip(void) {
     FILE *fp;
-    char id[20], period[30];
+    char id[20];
+    char period[30];
     Employee e;
-    int found = 0, len, i;
-    float gross, net;
+    int found = 0;
+    int len;
+    int i;
+    float gross;
+    float net;
     time_t now = time(NULL);
- 
+
     printf("Enter employee ID for the payslip: ");
     scanf(" %19[^\n]", id);
-    while (getchar() != '\n');                          /* clear leftover input */
- 
+    clear_buffer();
+
     fp = fopen("Employee Payroll Records.csv", "r");
-    if (fp == NULL)
-    {
+
+    if (fp == NULL) {
         printf("\nNo records file found.\n");
         return;
     }
- 
-    skipHeader(fp);                                     /* ignore the column-names line */
- 
+
+    skipHeader(fp);
+
     while (fscanf(fp, CSV_FORMAT,
-                  e.name, e.id, e.designation, e.department, e.email,
-                  e.date_joining, &e.experience, e.bank_name, e.bank_account,
-                  &e.basic_salary, &e.allowance, &e.overtime_pay,
-                  &e.bonuses, &e.taxes, &e.net_salary) == 15)
-    {
-        if (strcmp(e.id, id) == 0)
-        {
+        e.name, e.id, e.designation, e.department, e.email,
+        e.date_joining, e.bank_name, e.bank_account,
+        &e.basic_salary, &e.allowance, &e.overtime_pay,
+        &e.bonuses, &e.taxes, &e.net_salary) == 14) {
+
+        if (strcmp(e.id, id) == 0) {
             found = 1;
-            break;                                      /* stop, e now holds this employee */
+            break;
         }
     }
+
     fclose(fp);
- 
-    if (!found)
-    {
+
+    if (!found) {
         printf("\nEmployee not found.\n");
         return;
     }
- 
+
     strftime(period, sizeof(period), "%B %Y", localtime(&now));
+
     gross = e.basic_salary + e.allowance + e.overtime_pay + e.bonuses;
     net = gross - e.taxes;
     len = (int)strlen(e.bank_account);
- 
+
     printf("\n");
-    for (i = 0; i < 48; i++) putchar('-');
+
+    for (i = 0; i < 48; i++) {
+        putchar('-');
+    }
+
     printf("\n%27s\n%*s\n", "PAYSLIP", 24 + (int)strlen(period) / 2, period);
-    for (i = 0; i < 48; i++) putchar('-');
- 
+
+    for (i = 0; i < 48; i++) {
+        putchar('-');
+    }
+
     printf("\n%-16s: %s\n", "Employee ID", e.id);
     printf("%-16s: %s\n", "Name", e.name);
     printf("%-16s: %s\n", "Designation", e.designation);
     printf("%-16s: %s\n", "Department", e.department);
     printf("%-16s: %s\n", "Joining Date", e.date_joining);
     printf("%-16s: %s\n", "Bank", e.bank_name);
-    if (len > 4)
-        printf("%-16s: ****%s\n", "Account", e.bank_account + len - 4);   /* last 4 digits only */
-    else
+
+    if (len > 4) {
+        printf("%-16s: ****%s\n", "Account", e.bank_account + len - 4);
+    } else {
         printf("%-16s: %s\n", "Account", e.bank_account);
- 
-    for (i = 0; i < 48; i++) putchar('-');
+    }
+
+    for (i = 0; i < 48; i++) {
+        putchar('-');
+    }
+
     printf("\nEARNINGS\n");
     printf("  %-28s %14.2f\n", "Basic Salary", e.basic_salary);
     printf("  %-28s %14.2f\n", "Allowance", e.allowance);
     printf("  %-28s %14.2f\n", "Overtime Pay", e.overtime_pay);
     printf("  %-28s %14.2f\n", "Bonus", e.bonuses);
     printf("  %-28s %14.2f\n", "Gross Salary", gross);
-    for (i = 0; i < 48; i++) putchar('-');
+
+    for (i = 0; i < 48; i++) {
+        putchar('-');
+    }
+
     printf("\nDEDUCTIONS\n");
     printf("  %-28s %14.2f\n", "Taxes", e.taxes);
-    for (i = 0; i < 48; i++) putchar('-');
+
+    for (i = 0; i < 48; i++) {
+        putchar('-');
+    }
+
     printf("\n%-30s %14.2f\n", "NET SALARY", net);
-    for (i = 0; i < 48; i++) putchar('-');
+
+    for (i = 0; i < 48; i++) {
+        putchar('-');
+    }
+
     printf("\n");
 }
-
