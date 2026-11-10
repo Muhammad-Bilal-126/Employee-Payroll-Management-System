@@ -46,7 +46,7 @@ int employee_count = 0;
 /* Function prototypes */
 int search(char arr[]);                             // searches for an employee in file and displays its entire data. 
 void load_data(void);                               // loads programs data from file into the memory (an array), and also determines no. of employees in the 
-void display(int i);                                // displays an employess data.
+void display(char arr[]);                                // displays an employess data.
 void updateEmployee(void);                          // update an employees certain record field like email, department, etc.
 void deleteEmployee(void);                          // delete an employee record from file.
 void savedata(void);                                //
@@ -123,7 +123,7 @@ int main() {
                 scanf(" %19s", employid);
                 clear_buffer();
 
-                search(employid);
+                display(employid);
                 break;
             }
 
@@ -538,7 +538,6 @@ int search(char employid[]) {
 
     for (i = 0; i < employee_count; i++) {
         if (strcmp(emp[i].id, employid) == 0) {
-            display(i);
             return i;
         }
     }
@@ -547,7 +546,10 @@ int search(char employid[]) {
     return -1;
 }
 
-void display(int i) {
+void display(char employid[]) {
+    int i;
+    i=search(employid);
+    if( i!=-1) {
     printf("Name: %s\n", emp[i].name);
     printf("ID: %s\n", emp[i].id);
     printf("Designation: %s\n", emp[i].designation);
@@ -562,7 +564,8 @@ void display(int i) {
     printf("Bonus: %.2f\n", emp[i].bonuses);
     printf("Taxes: %.2f\n", emp[i].taxes);
     printf("Final Salary: %.2f\n", emp[i].net_salary);
-}
+    }
+ }
 
 /* =====================================================================
                             SAVE DATA
