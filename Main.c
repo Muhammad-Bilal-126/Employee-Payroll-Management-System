@@ -585,7 +585,7 @@ void deleteEmployee(void) {
     }
 
     employee_count--;
-    saveData(); 
+    savedata(); 
     printf("Employee deleted successfully.\n");
 }
 
@@ -620,28 +620,28 @@ do {
         {
             printf("Enter new Designation: ");
             scanf("%99[^\n]", emp[index].designation);
-            saveData();
+            savedata();
             printf("Designation updated and saved successfully!\n");
             break; }
         case 2:
         {
             printf("Enter new Department: ");
             scanf("%99[^\n]", emp[index].department);
-            saveData();
+            savedata();
             printf("Department updated and saved successfully!\n");
             break; }
         case 3:
         {
             printf("Enter new Email: ");
             scanf("%99s", emp[index].email);
-            saveData();
+            savedata();
             printf("Email updated and saved successfully!\n");
             break; }
         case 4:
         {
             printf("Enter updated Experience (years): ");
             scanf("%f", &emp[index].experience);
-            saveData();
+            savedata();
             printf("Experience updated and saved successfully!\n");
             break; }
         case 5:
@@ -649,7 +649,7 @@ do {
             printf("Enter new Basic Salary: ");
             scanf("%f", &emp[index].basic_salary);
             emp[index].net_salary = emp[index].basic_salary + emp[index].allowance + emp[index].bonuses + emp[index].overtime_pay - emp[index].taxes;
-            saveData();
+            savedata();
             printf("Salary updated and saved successfully!\n");
             break; }
             case 0:
