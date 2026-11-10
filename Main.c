@@ -2,6 +2,7 @@
 #include<string.h>
 #include <ctype.h>
 #include<math.h>
+#include<time.h>
 /*
 functions list:
 1) aik functions sarri details ko user se input lene ke liye --> Shehryar
@@ -17,6 +18,8 @@ jis employee ka record update karna hoga user iski id dega --> Amin
 8) Exit ka code direct main mein likh deingy ---> Qaim
 */
 #define Max_Employee 100
+#define CSV_FORMAT " %99[^,], %19[^,], %99[^,], %99[^,], %99[^,], %19[^,], %f, %49[^,], %49[^,], %f, %f, %f, %f, %f, %f"
+#define TABLE_WIDTH 117 /* Width of the table: the widest of the two lines each employee uses. */
 typedef struct{
     char name[100];
     char id[20];
@@ -46,6 +49,8 @@ typedef struct{
     void savedata();
     void input(void);
     int add_employee (void);
+    void displayAllRecords(void);
+    void generatePayslip(void);
 
     // ----------- input helpers -----------------
 
@@ -695,4 +700,157 @@ void load_data(void) {      //LOADS DATA AT STARTUP INTO THE MEMORY
         }
     }
     fclose(fp);
+}
+void skipHeader(FILE *fp)
+{
+    char line[800];
+ 
+    if (fgets(line, sizeof(line), fp) == NULL || strstr(line, "NAME,ID") == NULL)
+        rewind(fp);
+}
+ 
+/* Prints a row of dashes followed by a newline. */
+void printLine(int length)
+{
+    int i;
+    for (i = 0; i < length; i++)
+        putchar('-');
+    putchar('\n');
+}
+ 
+/* Width of the table: the widest of the two lines each employee uses. */
+
+ 
+/* Reads the CSV from start to end. Each employee is shown on two lines so the
+   table fits on screen: line 1 = personal details, line 2 = bank and pay. */
+void displayAllRecords(void)
+{
+    FILE *fp = fopen("Employee Payroll Records.csv", "r");
+    Employee e;
+    int count = 0;
+ 
+    if (fp == NULL)
+    {
+        printf("\nNo records file found.\n");
+        printf("\nPress Enter to return to the menu...");
+        getchar();
+        return;
+    }
+ 
+    skipHeader(fp);                                     /* ignore the column-names line */
+ 
+    printf("\n");
+    printLine(TABLE_WIDTH);
+    printf("%-20s %-10s %-16s %-14s %-26s %-15s %10s\n",
+           "NAME", "ID", "ROLE", "DEPARTMENT", "EMAIL", "DATE OF JOINING", "EXPERIENCE");
+    printf("%-20s %-16s %12s %10s %12s %10s %10s %12s\n",
+           "BANK NAME", "BANK ACCOUNT", "BASIC SALARY", "ALLOWANCE",
+           "OVERTIME PAY", "TAXES", "BONUSES", "NET SALARY");
+    printLine(TABLE_WIDTH);
+ 
+    /* fscanf returns how many fields it read; 15 means a complete record */
+    while (fscanf(fp, CSV_FORMAT,
+                  e.name, e.id, e.designation, e.department, e.email,
+                  e.date_joining, &e.experience, e.bank_name, e.bank_account,
+                  &e.basic_salary, &e.allowance, &e.overtime_pay,
+                  &e.bonuses, &e.taxes, &e.net_salary) == 15)
+    {
+        count++;
+        printf("%-20.20s %-10.10s %-16.16s %-14.14s %-26.26s %-15.15s %10.1f\n",
+               e.name, e.id, e.designation, e.department, e.email,
+               e.date_joining, e.experience);
+        printf("%-20.20s %-16.16s %12.2f %10.2f %12.2f %10.2f %10.2f %12.2f\n",
+               e.bank_name, e.bank_account, e.basic_salary, e.allowance,
+               e.overtime_pay, e.taxes, e.bonuses, e.net_salary);
+        printLine(TABLE_WIDTH);
+    }
+    fclose(fp);
+ 
+    if (count == 0)
+        printf("No employee records found.\n");
+    else
+        printf("Total employees: %d\n", count);
+ 
+    printf("\nPress Enter to return to the menu...");
+    getchar();                      /* waits for Enter (main must clear the leftover newline first) */
+}
+ 
+/* Asks for an ID, finds that employee in the CSV and prints a payslip. */
+void generatePayslip(void)
+{
+    FILE *fp;
+    char id[20], period[30];
+    Employee e;
+    int found = 0, len, i;
+    float gross, net;
+    time_t now = time(NULL);
+ 
+    printf("Enter employee ID for the payslip: ");
+    scanf(" %19[^\n]", id);
+    while (getchar() != '\n');                          /* clear leftover input */
+ 
+    fp = fopen("Employee Payroll Records.csv", "r");
+    if (fp == NULL)
+    {
+        printf("\nNo records file found.\n");
+        return;
+    }
+ 
+    skipHeader(fp);                                     /* ignore the column-names line */
+ 
+    while (fscanf(fp, CSV_FORMAT,
+                  e.name, e.id, e.designation, e.department, e.email,
+                  e.date_joining, &e.experience, e.bank_name, e.bank_account,
+                  &e.basic_salary, &e.allowance, &e.overtime_pay,
+                  &e.bonuses, &e.taxes, &e.net_salary) == 15)
+    {
+        if (strcmp(e.id, id) == 0)
+        {
+            found = 1;
+            break;                                      /* stop, e now holds this employee */
+        }
+    }
+    fclose(fp);
+ 
+    if (!found)
+    {
+        printf("\nEmployee not found.\n");
+        return;
+    }
+ 
+    strftime(period, sizeof(period), "%B %Y", localtime(&now));
+    gross = e.basic_salary + e.allowance + e.overtime_pay + e.bonuses;
+    net = gross - e.taxes;
+    len = (int)strlen(e.bank_account);
+ 
+    printf("\n");
+    for (i = 0; i < 48; i++) putchar('-');
+    printf("\n%27s\n%*s\n", "PAYSLIP", 24 + (int)strlen(period) / 2, period);
+    for (i = 0; i < 48; i++) putchar('-');
+ 
+    printf("\n%-16s: %s\n", "Employee ID", e.id);
+    printf("%-16s: %s\n", "Name", e.name);
+    printf("%-16s: %s\n", "Designation", e.designation);
+    printf("%-16s: %s\n", "Department", e.department);
+    printf("%-16s: %s\n", "Joining Date", e.date_joining);
+    printf("%-16s: %s\n", "Bank", e.bank_name);
+    if (len > 4)
+        printf("%-16s: ****%s\n", "Account", e.bank_account + len - 4);   /* last 4 digits only */
+    else
+        printf("%-16s: %s\n", "Account", e.bank_account);
+ 
+    for (i = 0; i < 48; i++) putchar('-');
+    printf("\nEARNINGS\n");
+    printf("  %-28s %14.2f\n", "Basic Salary", e.basic_salary);
+    printf("  %-28s %14.2f\n", "Allowance", e.allowance);
+    printf("  %-28s %14.2f\n", "Overtime Pay", e.overtime_pay);
+    printf("  %-28s %14.2f\n", "Bonus", e.bonuses);
+    printf("  %-28s %14.2f\n", "Gross Salary", gross);
+    for (i = 0; i < 48; i++) putchar('-');
+    printf("\nDEDUCTIONS\n");
+    printf("  %-28s %14.2f\n", "Taxes", e.taxes);
+    for (i = 0; i < 48; i++) putchar('-');
+    printf("\n%-30s %14.2f\n", "NET SALARY", net);
+    for (i = 0; i < 48; i++) putchar('-');
+    printf("\n");
 }
