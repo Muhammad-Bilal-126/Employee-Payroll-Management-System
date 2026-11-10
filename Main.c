@@ -69,6 +69,13 @@ typedef struct{
 
 int main(){
     int option;
+    FILE *file = fopen("values.txt", "r");         
+    if (file != NULL) {
+        fscanf(file, "%d", &employee_count);
+        fclose(file);
+    }
+    
+    load_data();
     do {
         printf("%110s\n","=== Employee Payroll Management System ===");
         printf("\n%70s\n","1-Add a new employee");
@@ -502,18 +509,17 @@ int validate_taxes(float taxes, float gross_salary){
     int i;
     for (i=0; i < employee_count; i++)
     {
-         if( strcmp( emp[i].id, employid) == 0)
+        if( strcmp( emp[i].id, employid) == 0)
          {
             display(i);
             return i;
          }
-         else
-         {
-            printf("Wrong ID Data Not Found\n");
-            return -1;
-         }
+
     }
+        printf("Wrong ID Data Not Found\n");
+         return -1;
 }
+
 
 void display(int i)
 {
@@ -653,4 +659,39 @@ do {
             printf("Invalid choice! No changes were made.\n");
     }
 }while(choice!= 0);
+}
+
+void load_data(void) {      //LOADS DATA AT STARTUP INTO THE MEMORY
+    FILE *fp = fopen("Employee Payroll Records.csv", "r");
+    if (fp == NULL) {
+        employee_count = 0;
+        return;
+    }
+
+    employee_count = 0;
+    char line[1024];
+    while (fgets(line, sizeof(line), fp) != NULL && employee_count < Max_Employee) {
+
+        int matched = sscanf(line, " %99[^,], %19[^,], %99[^,], %99[^,], %99[^,], %19[^,], %f, %49[^,], %49[^,], %f, %f, %f, %f, %f, %f",
+            emp[employee_count].name,
+            emp[employee_count].id,
+            emp[employee_count].designation,
+            emp[employee_count].department,
+            emp[employee_count].email,
+            emp[employee_count].date_joining,
+            &emp[employee_count].experience,
+            emp[employee_count].bank_name,
+            emp[employee_count].bank_account,
+            &emp[employee_count].basic_salary,
+            &emp[employee_count].allowance,
+            &emp[employee_count].overtime_pay,
+            &emp[employee_count].bonuses,
+            &emp[employee_count].taxes,
+            &emp[employee_count].net_salary);
+
+        if (matched == 15) {
+            employee_count++;
+        }
+    }
+    fclose(fp);
 }
