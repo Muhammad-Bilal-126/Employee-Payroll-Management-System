@@ -617,7 +617,7 @@ void deleteEmployee(void) {
         printf("Employee not found. Deletion cancelled.\n");
         return;
     }
-
+    printf("\n=== Record Deletion of %s ===\n", emp[index].name);
     printf("\nAre you sure you want to permanently delete this employee? (y/n): ");
     scanf(" %c", &confirm);
     clear_buffer();
