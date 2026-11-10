@@ -39,6 +39,7 @@ typedef struct{
     int employee_count = 0;
 
     int search(char arr[]);
+    void load_data(void);
     void display(int i);
     void updateEmployee(void);
     void deleteEmployee(void);
