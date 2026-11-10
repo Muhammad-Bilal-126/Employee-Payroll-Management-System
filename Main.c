@@ -43,7 +43,7 @@ typedef struct{
 
     int search(char arr[]);
     void load_data(void);
-    void display(int i);
+    void display(char arr[]);
     void updateEmployee(void);
     void deleteEmployee(void);
     void savedata();
@@ -129,7 +129,7 @@ int main(){
                 printf("Enter the employ id to search\n");
                 scanf(" %s",employid);
                 clear_buffer();
-                search(employid);
+                display(employid);
                 break;
             }
             case (6):{
@@ -513,18 +513,18 @@ int validate_taxes(float taxes, float gross_salary){
     {
         if( strcmp( emp[i].id, employid) == 0)
          {
-            display(i);
             return i;
          }
-
     }
         printf("Wrong ID Data Not Found\n");
          return -1;
 }
 
 
-void display(int i)
+void display(char employid[])
 {
+   int i;
+        i=search(employid);
         printf("Name:%s",emp[i].name);
         printf("\nID:%s",emp[i].id);
         printf("\nDesignation:%s",emp[i].designation);
