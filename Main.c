@@ -545,6 +545,11 @@ int search(char employid[]) {
     printf("Wrong ID. Data Not Found\n");
     return -1;
 }
+/* =====================================================================
+
+                DISPLAY FOR SEARCHED EMPLOYEE RECORD
+
+ =====================================================================*/
 
 void display(char employid[]) {
     int i;
