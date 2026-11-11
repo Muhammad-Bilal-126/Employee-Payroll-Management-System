@@ -537,7 +537,7 @@ int search(char employid[]) {
     int i;
 
     for (i = 0; i < employee_count; i++) {
-        if (strcmp(emp[i].id, employid) == 0) {
+        if (strcmpi(emp[i].id, employid) == 0) {
             return i;
         }
     }
