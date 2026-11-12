@@ -680,7 +680,7 @@ int validate_email(const char *email) {
 int validate_date(const char *date) {
     static const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     int i, day, month, year, max_day;
-
+   
     if (strlen(date) != 8) {
         return -1;
     }
