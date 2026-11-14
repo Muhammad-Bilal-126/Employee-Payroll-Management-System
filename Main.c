@@ -70,8 +70,7 @@ int employee_count = 0;
 
 /* Function prototypes */
 int search(char arr[]);                             // searches for an employee in memory, prints a message if not found, returns its index (or -1).
-int find_index(const char *id);                     // same search but silent: used by add/update/delete/payslip so only ONE message is shown.
-int compare_ignore_case(const char *a, const char *b); // like strcmp but ignores upper/lower case (strcmpi is not available on every compiler).
+int id_exists(const char *id);                      // checks if an employee ID already exists in memory.
 void load_data(void);                               // loads programs data from file into the memory (an array), and also determines no. of employees in the file
 void display(char arr[]);                           // displays an employess data.
 void updateEmployee(void);                          // update an employees certain record field like email, department, etc.
@@ -266,7 +265,7 @@ int input(void) {
         printf("\nName as per CNIC (or type 'exit' to cancel): ");
         scanf(" %99[^\n]", e->name);
         clear_buffer();
-        // Checks if the user wants to exit the input process
+        // Checks if the user wants to exit the input process because he may have press one accedentally the add employee option and wants to return to the main menu.
         if (strcmpi(e->name, "exit") == 0) {
         printf("\nOperation cancelled. Returning to main menu...\n");
         return -1;
@@ -289,7 +288,7 @@ int input(void) {
 
         if (status == -1) {
             printf("Invalid ID! An ID can have letters, digits and hyphen ('-') only.\n");
-        } else if (find_index(e->id) != -1) {      /* an ID must be unique, otherwise search/update/delete would hit the wrong person */
+        } else if (id_exists(e->id) == 1) {      /* an ID must be unique, otherwise search/update/delete would hit the wrong person */
             printf("An employee with this ID already exists! IDs must be unique.\n");
             status = -1;
         }
@@ -434,6 +433,7 @@ int input(void) {
 
     /* Calculate net salary */
     calculate_net_salary(e);
+    return 0;
 }
 
 /* =====================================================================
@@ -773,34 +773,27 @@ int validate_bonuses(float amount) {
                             SEARCH / DISPLAY
 ===================================================================== */
 
-/* Works like strcmp (0 = same text) but treats 'A' and 'a' as equal, so ids like cs-134 and CS-134 match.
-   tolower() needs an unsigned char value, hence the casts. */
-int compare_ignore_case(const char *a, const char *b) {
-    int i = 0;
+// checking if id has already exists
 
-    while (a[i] != '\0' && b[i] != '\0') {
-        int x = tolower((unsigned char)a[i]);
-        int y = tolower((unsigned char)b[i]);
-
-        if (x != y) {
-            return x - y;
+int id_exists(const char *id) {
+    int i;
+    for (i = 0; i < employee_count; i++) {
+        if (strcmpi(emp[i].id, id) == 0) {
+            return 1; // Duplicate found
         }
-        i++;
     }
-
-    return tolower((unsigned char)a[i]) - tolower((unsigned char)b[i]);
+    return 0; // Unique
 }
 
-/* Silent search: returns the position of the employee in emp[], or -1 if the ID does not exist. */
-int find_index(const char *id) {
+int search(char employid[]) {
     int i;
 
     for (i = 0; i < employee_count; i++) {
-        if (compare_ignore_case(emp[i].id, id) == 0) {
+        if (strcmpi(emp[i].id, employid) == 0) {
             return i;
         }
     }
-
+    printf("Wrong ID. Data Not Found\n");
     return -1;
 }
 /* =====================================================================
@@ -808,24 +801,11 @@ int find_index(const char *id) {
                 DISPLAY FOR SEARCHED EMPLOYEE RECORD
 
  =====================================================================*/
-
-/* Same as find_index(), but also prints a message when the employee is not found. */
-int search(char employid[]) {
-    int i = find_index(employid);
-
-    if (i == -1) {
-        printf("Wrong ID. Data Not Found\n");
-    }
-
-    return i;
-}
-
-/* Prints all details of ONE employee (menu option 5). */
 void display(char employid[]) {
     int i;
     i = search(employid);
     if (i != -1) {
-    printf("Name: %s\n", emp[i].name);
+    printf("\nName: %s\n", emp[i].name);
     printf("ID: %s\n", emp[i].id);
     printf("Designation: %s\n", emp[i].designation);
     printf("Department: %s\n", emp[i].department);
@@ -897,10 +877,10 @@ void deleteEmployee(void) {
     scanf("%19s", delete_id);
     clear_buffer();
 
-    index = find_index(delete_id);
+    index = search(delete_id);
 
     if (index == -1) {
-        printf("Employee not found. Deletion cancelled.\n");
+        printf("Deletion cancelled.\n");
         return;
     }
     printf("\n=== Record Deletion of %s ===\n", emp[index].name);
@@ -946,10 +926,10 @@ void updateEmployee(void) {
     scanf("%19s", search_id);
     clear_buffer();
 
-    index = find_index(search_id);
+    index = search(search_id);
 
     if (index == -1) {
-        printf("Employee not found. Updation cancelled.\n");
+        printf("Updation cancelled.\n");
         return;
     }
 
@@ -1235,7 +1215,7 @@ void generatePayslip(void) {
     printf("Enter employee ID for the payslip: ");
     scanf(" %19[^\n]", id);
     clear_buffer();
-    index = find_index(id);
+    index = search(id);
     if (index == -1) {
         printf("\nEmployee not found.\n");
         return;}
@@ -1259,7 +1239,7 @@ void generatePayslip(void) {
     printf("%-16s: %s\n", "Department", e->department);
     printf("%-16s: %s\n", "Joining Date", e->date_joining);
     printf("%-16s: %s\n", "Bank", e->bank_name);
-
+   
     /* Privacy: show only the last 4 characters of the account number (e->bank_account + len - 4 starts 4 from the end) */
     if (len > 4) {
         printf("%-16s: ****%s\n", "Account", e->bank_account + len - 4);
@@ -1277,4 +1257,5 @@ void generatePayslip(void) {
     printf("  %-28s %14.2f\n", "Taxes", e->taxes);
     printLine(48);
     printf("%-30s %14.2f\n", "NET SALARY", net);
-    printLine(48);}
+    printLine(48);
+}
