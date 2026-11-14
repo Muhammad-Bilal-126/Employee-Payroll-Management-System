@@ -1239,7 +1239,7 @@ void generatePayslip(void) {
     printf("%-16s: %s\n", "Department", e->department);
     printf("%-16s: %s\n", "Joining Date", e->date_joining);
     printf("%-16s: %s\n", "Bank", e->bank_name);
-
+   
     /* Privacy: show only the last 4 characters of the account number (e->bank_account + len - 4 starts 4 from the end) */
     if (len > 4) {
         printf("%-16s: ****%s\n", "Account", e->bank_account + len - 4);
