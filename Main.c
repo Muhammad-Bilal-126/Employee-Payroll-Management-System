@@ -1182,7 +1182,7 @@ void displayAllRecords(void) {
         printLine(TABLE_WIDTH);
 
         printf("%-16s %-8s %-12s %-10s %-20s %-15s %-12s %-14s %12s %9s %12s %9s %9s %10s\n",
-            "NAME", "ID", "ROLE", "DEPARTMENT", "EMAIL", "DATE OF JOINING",
+            "NAME", "ID", "DESIGNATION", "DEPARTMENT", "EMAIL", "DATE OF JOINING",
             "BANK NAME", "BANK ACCOUNT", "BASIC SALARY", "ALLOWANCE",
             "OVERTIME PAY", "TAXES", "BONUSES", "NET SALARY");
 
