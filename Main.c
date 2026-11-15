@@ -197,7 +197,6 @@ int main(void) {
 
 /* =======================================================================
                                 LOGIN
-===================================================================== */
 
 /* Returns 1 if the correct username AND password are entered within MAX_LOGIN_ATTEMPTS tries, otherwise 0.
    Note: the password is visible while typing, hiding it needs non-standard functions (like getch). */
@@ -248,7 +247,6 @@ void pause_for_enter(void) {
 
 /* =======================================================================
                                 INPUTS
-===================================================================== */
 
 /* Asks for every field of a new employee and checks each answer.
    Pattern used for every text field: ask -> read -> validate -> repeat while the answer is invalid.
@@ -438,7 +436,6 @@ int input(void) {
 
 /* =====================================================================
                             ADD EMPLOYEE
-===================================================================== */
 
 /* Adds one employee: check space -> input() -> append to the CSV file -> count it.
    employee_count is increased only AFTER the file write succeeded, so memory and file never disagree.
@@ -491,7 +488,6 @@ int add_employee(void) {
 
 /* =====================================================================
                             FILE HELPERS
-===================================================================== */
 
 void write_header(FILE *fp) {
     fprintf(fp, "%s\n", CSV_HEADER);
@@ -553,7 +549,6 @@ void printLine(int length) {
 
 /* =====================================================================
                             INPUT HELPERS
-===================================================================== */
 
 /* Throws away everything left in the input buffer up to and including Enter. Used after every scanf. */
 void clear_buffer(void) {
@@ -597,7 +592,6 @@ int only_letters_and_spaces(const char *text) {
 
 /* =====================================================================
                             VALIDATORS
-===================================================================== */
 
 int validate_name(const char *name) {
     return only_letters_and_spaces(name);
@@ -771,7 +765,6 @@ int validate_bonuses(float amount) {
 
 /* =====================================================================
                             SEARCH / DISPLAY
-===================================================================== */
 
 // checking if id has already exists
 
@@ -824,7 +817,6 @@ void display(char employid[]) {
 
 /* =====================================================================
                             SAVE DATA
-===================================================================== */
 
 /* Rewrites the whole CSV from emp[]. Mode "w" erases the old file content first, so the header
    and every record are written again. Called after every update and delete. */
@@ -864,7 +856,6 @@ void savedata(void) {
 
 /* =====================================================================
                             DELETE EMPLOYEE
-===================================================================== */
 
 /* Deletes one employee after asking for confirmation, then saves the file. */
 void deleteEmployee(void) {
@@ -908,7 +899,6 @@ void deleteEmployee(void) {
 
 /* =====================================================================
                             UPDATE EMPLOYEE
-===================================================================== */
 /* Every new value is read into a temporary variable and checked FIRST.
    emp[index] is only changed after the value is valid, so a wrong entry
    can never end up in memory (or in the file). */
@@ -1101,7 +1091,6 @@ void updateEmployee(void) {
 
 /* =====================================================================
                             LOAD DATA
-===================================================================== */
 
 /* Reads the CSV file into emp[] and sets employee_count. Every line is split with sscanf and CSV_FORMAT:
    sscanf returns how many fields it filled, 14 means a complete, valid record. Anything else is
@@ -1163,7 +1152,6 @@ void load_data(void) {
 
 /* =====================================================================
                             DISPLAY ALL RECORDS
-===================================================================== */
 /* One employee per row, 14 columns. The table is TABLE_WIDTH (190) characters wide,
    so the console window must be at least that wide or the rows will wrap.
    printf formats used below:
@@ -1201,7 +1189,6 @@ void displayAllRecords(void) {
 
 /* =====================================================================
                             GENERATE PAYSLIP
-===================================================================== */
 
 /* Asks for an employee ID and prints a formatted payslip: employee details, earnings, deductions and net salary. */
 void generatePayslip(void) {
