@@ -75,7 +75,7 @@ void load_data(void);                               // loads programs data from 
 void display(char arr[]);                           // displays an employess data.
 void updateEmployee(void);                          // update an employees certain record field like email, department, etc.
 void deleteEmployee(void);                          // delete an employee record from file.
-void savedata(void);                                // rewrites the whole file from memory (used after update / delete).
+int savedata(void);                                // rewrites the whole file from memory (used after update / delete).
 int input(void);                                   // take valid input and return to add_employee to save in the file
 int add_employee(void);                             // appends the new employee to the file; memory is updated accordingly.
 void displayAllRecords(void);                       // displays all records, one employee per row.
@@ -287,7 +287,7 @@ int input(void) {
         status = validate_id(e->id);
 
         if (status == -1) {
-            printf("Invalid ID! An ID can have letters, digits and hyphen ('-') only.\n");
+            printf("Invalid ID! An ID can have letters and digits only.\n");
         } else if (id_exists(e->id) == 1) {      /* an ID must be unique, otherwise search/update/delete would hit the wrong person */
             printf("An employee with this ID already exists! IDs must be unique.\n");
             status = -1;
@@ -609,7 +609,7 @@ int validate_id(const char *id) {
     
 
     for (i = 0; id[i] != '\0'; i++) {
-        if (isalnum((unsigned char)id[i]) == 0 && id[i] != '-') {
+        if (isalnum((unsigned char)id[i]) == 0) {
             return -1;
         }
     }
@@ -828,7 +828,7 @@ void display(char employid[]) {
 
 /* Rewrites the whole CSV from emp[]. Mode "w" erases the old file content first, so the header
    and every record are written again. Called after every update and delete. */
-void savedata(void) {
+int savedata(void) {
     FILE *fp;
     int i;
 
@@ -836,7 +836,7 @@ void savedata(void) {
 
     if (fp == NULL) {
         printf("\nError! Could not save the changes to the file.\n");
-        return;
+        return -1;
     }
 
     write_header(fp);
@@ -858,8 +858,9 @@ void savedata(void) {
             emp[i].taxes,
             emp[i].net_salary);
     }
-
+ 
     fclose(fp);
+    return 1;
 }
 
 /* =====================================================================
@@ -901,9 +902,11 @@ void deleteEmployee(void) {
 
     employee_count--;
 
-    savedata();
-
-    printf("Employee deleted successfully.\n");
+    if (savedata() == 1) {
+        printf("Employee deleted successfully.\n");
+    } else {
+        printf("Error occurred while deleting employee.\n");
+    }
 }
 
 /* =====================================================================
@@ -964,8 +967,11 @@ void updateEmployee(void) {
                     break;
                 }
                 strcpy(emp[index].designation, temp_text);
-                savedata();
-                printf("Designation updated and saved successfully!\n");
+                if (savedata() == 1) {
+                    printf("Designation updated and saved successfully!\n");
+                } else {
+                    printf("Error occurred while updating designation.\n");
+                }
                 break;
 
             case 2:
@@ -978,8 +984,11 @@ void updateEmployee(void) {
                     break;
                 }
                 strcpy(emp[index].department, temp_text);
-                savedata();
-                printf("Department updated and saved successfully!\n");
+                if (savedata() == 1) {
+                    printf("Department updated and saved successfully!\n");
+                } else {
+                    printf("Error occurred while updating department.\n");
+                }
                 break;
 
             case 3:
@@ -992,8 +1001,11 @@ void updateEmployee(void) {
                     break;
                 }
                 strcpy(emp[index].email, temp_text);
-                savedata();
-                printf("Email updated and saved successfully!\n");
+                if (savedata() == 1) {
+                    printf("Email updated and saved successfully!\n");
+                } else {
+                    printf("Error occurred while updating email.\n");
+                }
                 break;
 
             case 4:
@@ -1018,8 +1030,11 @@ void updateEmployee(void) {
                 /* Both validated successfully, now update memory and save */
                 strcpy(emp[index].bank_name, temp_bank);
                 strcpy(emp[index].bank_account, temp_acc);
-                savedata();
-                printf("Bank Name and Account number updated and saved successfully!\n");
+                if (savedata() == 1) {
+                    printf("Bank Name and Account number updated and saved successfully!\n");
+                } else {
+                    printf("Error occurred while updating bank information.\n");
+                }
                 break;
 
             case 5:
@@ -1032,8 +1047,11 @@ void updateEmployee(void) {
                     break;
                 }
                 strcpy(emp[index].bank_account, temp_acc);
-                savedata();
-                printf("Bank Account Number updated and saved successfully!\n");
+                if (savedata() == 1) {
+                    printf("Bank Account Number updated and saved successfully!\n");
+                } else {
+                    printf("Error occurred while updating bank account number.\n");
+                }
                 break;
 
             case 6:
@@ -1043,8 +1061,11 @@ void updateEmployee(void) {
                     emp[index].taxes = emp[index].basic_salary * TAX_RATE;
                     calculate_net_salary(&emp[index]);
 
-                    savedata();
-                    printf("Salary updated and saved successfully!\n");
+                    if (savedata() == 1) {
+                        printf("Salary updated and saved successfully!\n");
+                    } else {
+                        printf("Error occurred while updating salary.\n");
+                    }
                 } else {
                     printf("Invalid salary entered! No changes were made.\n");
                 }
@@ -1056,8 +1077,11 @@ void updateEmployee(void) {
                     emp[index].allowance = amount;
                     calculate_net_salary(&emp[index]);
 
-                    savedata();
-                    printf("Allowance updated and saved successfully!\n");
+                    if (savedata() == 1) {
+                        printf("Allowance updated and saved successfully!\n");
+                    } else {
+                        printf("Error occurred while updating allowance.\n");
+                    }
                 } else {
                     printf("Invalid Allowance entered! No changes were made.\n");
                 }
@@ -1069,8 +1093,11 @@ void updateEmployee(void) {
                     emp[index].bonuses = amount;
                     calculate_net_salary(&emp[index]);
 
-                    savedata();
-                    printf("Bonus updated and saved successfully!\n");
+                    if (savedata() == 1) {
+                        printf("Bonus updated and saved successfully!\n");
+                    } else {
+                        printf("Error occurred while updating bonus.\n");
+                    }
                 } else {
                     printf("Invalid Bonus entered! No changes were made.\n");
                 }
@@ -1082,8 +1109,11 @@ void updateEmployee(void) {
                     emp[index].overtime_pay = amount;
                     calculate_net_salary(&emp[index]);
 
-                    savedata();
-                    printf("Overtime updated and saved successfully!\n");
+                    if (savedata() == 1) {
+                        printf("Overtime updated and saved successfully!\n");
+                    } else {
+                        printf("Error occurred while updating overtime pay.\n");
+                    }
                 } else {
                     printf("Invalid Overtime pay entered! No changes were made.\n");
                 }
