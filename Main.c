@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
+#include "employee.h"
+
 #include <time.h>
+#include "validation.h" //INPUT VALIDATORS (returns -1 for an invalid and 0 for a valid input.)  NOTE: it recieves input as an argument from input() function.
+#include "helper.h"
 
 /*
 Important Functions list:
@@ -25,44 +28,10 @@ HOW THE PROGRAM WORKS (overview)
 - Display / Search / Payslip only read emp[], so they always agree with the file.
 */
 
-#define Max_Employee 100
-
 /* Login details (hard-coded for this project; real software would never store a password in the source code). */
 #define ADMIN_USERNAME "admin"
 #define ADMIN_PASSWORD "1234"
 #define MAX_LOGIN_ATTEMPTS 3
-
-/* Name of the data file. It is opened from the folder the program is run in. */
-#define CSV_FILE "Employee Payroll Records.csv"
-/* First line of the CSV file (column names). The order of the numbers matches the record order below. */
-#define CSV_HEADER "NAME,ID,DESIGNATION,DEPARTMENT,EMAIL,DATE OF JOINING,BANK NAME,BANK ACCOUNT,BASIC SALARY,ALLOWANCE,OVERTIME PAY,BONUSES,TAXES,NET SALARY"
-/* Pattern used by sscanf to split ONE csv line into the 14 fields of an Employee.
-   %99[^,] = read text up to the next comma (so spaces inside a name are allowed, max 99 characters)
-   %f      = read a decimal number
-   The space before every % (and after each comma) skips the blanks that follow the commas. */
-#define CSV_FORMAT " %99[^,], %19[^,], %99[^,], %99[^,], %99[^,], %19[^,], %49[^,], %49[^,], %f, %f, %f, %f, %f, %f"
-/* Width of the one-row table: the 14 column widths in displayAllRecords() added up (164)
-   plus 13 gaps of 2 spaces (26). If you change a column width, change this number too. */
-#define TABLE_WIDTH 190
-/* Tax is always 10% of the basic salary. */
-#define TAX_RATE 0.10f
-
-typedef struct {
-    char name[100];
-    char id[20];
-    char designation[100];
-    char department[100];
-    char email[100];
-    char date_joining[20];
-    char bank_name[50];
-    char bank_account[50];
-    float basic_salary;
-    float allowance;
-    float overtime_pay;
-    float bonuses;
-    float taxes;
-    float net_salary;
-} Employee;
 
 /* Global variables */
 Employee emp[Max_Employee];
@@ -70,40 +39,16 @@ int employee_count = 0;
 
 /* Function prototypes */
 int search(char arr[]);                             // searches for an employee in memory, prints a message if not found, returns its index (or -1).
-int id_exists(const char *id);                      // checks if an employee ID already exists in memory.
-void load_data(void);                               // loads programs data from file into the memory (an array), and also determines no. of employees in the file
+
 void display(char arr[]);                           // displays an employess data.
 void updateEmployee(void);                          // update an employees certain record field like email, department, etc.
 void deleteEmployee(void);                          // delete an employee record from file.
-int savedata(void);                                // rewrites the whole file from memory (used after update / delete).
 int input(void);                                   // take valid input and return to add_employee to save in the file
 int add_employee(void);                             // appends the new employee to the file; memory is updated accordingly.
 void displayAllRecords(void);                       // displays all records, one employee per row.
 void generatePayslip(void);                         // generates pay slip for an employee, based on his id.
 int login(void);                                    // asks for username and password (3 attempts). returns 1 if correct, 0 if not.
-void pause_for_enter(void);                         // waits until the user presses Enter, so the output can be read before the menu returns.
 
-void clear_buffer(void);                            // clears input buffer, for safe next input.
-int read_float(float *value);                       // a function specifically designed to check that if a float is given as input only or not.
-int only_letters_and_spaces(const char *text);      // a function specifically designed to check that if only letters are given as input.
-void calculate_net_salary(Employee *e);             // net = basic + allowance + overtime + bonus - taxes (one formula, used everywhere).
-void printLine(int length);                         // prints a row of dashes.
-void write_header(FILE *fp);                        // writes the column names as the first line of the CSV.
-FILE *open_csv_for_append(void);                    // opens the CSV for appending (adds header to a new file, fixes a missing newline).
-
-// INPUT VALIDATORS (returns -1 for an invalid and 0 for a valid input.)  NOTE: it recieves input as an argument from input() function.
-int validate_name(const char *name);
-int validate_id(const char *id);
-int validate_designation(const char *designation);
-int validate_department(const char *department);
-int validate_email(const char *email);
-int validate_date(const char *date);
-int validate_bank_name(const char *bank_name);
-int validate_bank_account(const char *account);
-int validate_basic_salary(float amount);
-int validate_allowance(float amount);
-int validate_overtime(float amount);
-int validate_bonuses(float amount);
 
 int main(void) {
     int option;
@@ -239,12 +184,6 @@ int login(void) {
     return 0;
 }
 
-/* Holds the screen until Enter is pressed. clear_buffer() reads characters until the Enter key,
-   and the input buffer is already empty at this point, so it really waits for a new Enter. */
-void pause_for_enter(void) {
-    printf("\nPress Enter to return to the menu...");
-    clear_buffer();
-}
 
 /* =======================================================================
                                 INPUTS
@@ -489,301 +428,12 @@ int add_employee(void) {
     return 0;
 }
 
-/* =====================================================================
-                            FILE HELPERS
-===================================================================== */
 
-void write_header(FILE *fp) {
-    fprintf(fp, "%s\n", CSV_HEADER);
-}
-
-/* Opens the CSV in append mode ("a") so old records stay untouched. Before that it peeks at the file
-   (binary mode "rb", so the file size and last character are exact):
-   - file missing or empty -> the header line is written first
-   - last record has no Enter at the end -> add one, otherwise the new record would be glued to it */
-FILE *open_csv_for_append(void) {
-    FILE *fp;
-    long size = -1;
-    int last = '\n';
-
-    /* Look at the file first: does it exist, is it empty, does it end with a newline? */
-    fp = fopen(CSV_FILE, "rb");
-
-    if (fp != NULL) {
-        if (fseek(fp, 0, SEEK_END) == 0) {
-            size = ftell(fp);
-
-            if (size > 0) {
-                fseek(fp, -1L, SEEK_END);
-                last = fgetc(fp);
-            }
-        }
-        fclose(fp);
-    }
-
-    fp = fopen(CSV_FILE, "a");
-
-    if (fp == NULL) {
-        return NULL;
-    }
-
-    if (size <= 0) {
-        write_header(fp);                 /* new or empty file: start with the column names */
-    } else if (last != '\n') {
-        fputc('\n', fp);                  /* last record had no newline: do not glue records together */
-    }
-
-    return fp;
-}
-
-/* The ONE formula for net salary, used by input() and every update. e is a pointer, so the change is made on the real employee. */
-void calculate_net_salary(Employee *e) {
-    e->net_salary = e->basic_salary + e->allowance + e->overtime_pay + e->bonuses - e->taxes;
-}
-
-void printLine(int length) {
-    int i;
-
-    for (i = 0; i < length; i++) {
-        putchar('-');
-    }
-
-    putchar('\n');
-}
-
-/* =====================================================================
-                            INPUT HELPERS
-===================================================================== */
-
-/* Throws away everything left in the input buffer up to and including Enter. Used after every scanf. */
-void clear_buffer(void) {
-    int c;
-
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-/* Reads one decimal number safely. Returns 0 if the user typed ONLY a valid number, -1 otherwise
-   (letters, "12abc", empty). The result is stored through the pointer 'value'. */
-int read_float(float *value) {
-    int c;
-
-    if (scanf(" %f", value) != 1) {
-        clear_buffer();
-        return -1;
-    }
-
-    while ((c = getchar()) == ' ' || c == '\t');      /* skip spaces typed after the number */
-
-    if (c != '\n' && c != EOF) {                        /* something other than Enter follows, e.g. "12abc": reject it */
-        clear_buffer();
-        return -1;
-    }
-
-    return 0;
-}
-
-/* Returns 0 if text contains only letters and spaces, -1 if any other character is found. */
-int only_letters_and_spaces(const char *text) {
-    int i;
-
-    for (i = 0; text[i] != '\0'; i++) {
-        if (isalpha((unsigned char)text[i]) == 0 && text[i] != ' ') {
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-/* =====================================================================
-                            VALIDATORS
-===================================================================== */
-
-int validate_name(const char *name) {
-    return only_letters_and_spaces(name);
-}
-
-int validate_id(const char *id) {
-    int i;
-
-    
-
-    for (i = 0; id[i] != '\0'; i++) {
-        if (isalnum((unsigned char)id[i]) == 0) {
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-int validate_designation(const char *designation) {
-    return only_letters_and_spaces(designation);
-}
-
-int validate_department(const char *department) {
-    return only_letters_and_spaces(department);
-}
-
-/* Basic email check: at least 5 characters, no spaces or commas, exactly one '@' that is not first,
-   and a '.' after the '@' that is neither right after it nor the last character. */
-int validate_email(const char *email) {
-    int i;
-    const char *at;
-    const char *dot;
-
-    if (strlen(email) < 5) {
-        return -1;
-    }
-
-    /* no spaces, and no commas (a comma would split the CSV line into the wrong fields) */
-    for (i = 0; i < (int)strlen(email); i++) {
-        if (isspace((unsigned char)email[i]) || email[i] == ',') {
-            return -1;
-        }
-    }
-
-    at = strchr(email, '@');
-
-    if (at == NULL) {
-        return -1;
-    }
-
-    if (strchr(at + 1, '@') != NULL) {
-        return -1;
-    }
-
-    if (at == email) {
-        return -1;
-    }
-
-    dot = strchr(at + 1, '.');
-
-    if (dot == NULL) {
-        return -1;
-    }
-
-    if (dot == at + 1) {
-        return -1;
-    }
-
-    if (email[strlen(email) - 1] == '.') {
-        return -1;
-    }
-
-    return 0;
-}
-
-/* Joining date must be exactly dd/mm/yy with a real day and month. */
-/* Joining date must be exactly dd/mm/yy: 8 characters, '/' at positions 2 and 5, digits elsewhere,
-   month 1-12 and a day that exists in that month (February has 29 days in leap years). */
-int validate_date(const char *date) {
-    static const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int i, day, month, year, max_day;
-   
-    if (strlen(date) != 8) {
-        return -1;
-    }
-
-    for (i = 0; i < 8; i++) {
-        if (i == 2 || i == 5) {
-            if (date[i] != '/') {
-                return -1;
-            }
-        } else if (isdigit((unsigned char)date[i]) == 0) {
-            return -1;
-        }
-    }
-
-    day   = (date[0] - '0') * 10 + (date[1] - '0');
-    month = (date[3] - '0') * 10 + (date[4] - '0');
-    year  = (date[6] - '0') * 10 + (date[7] - '0');       /* yy means 20yy */
-
-    if (month < 1 || month > 12) {
-        return -1;
-    }
-
-    max_day = days[month - 1];
-
-    if (month == 2 && year % 4 == 0) {
-        max_day = 29;                                       /* leap year */
-    }
-
-    if (day < 1 || day > max_day) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int validate_bank_name(const char *bank_name) {
-    return only_letters_and_spaces(bank_name);
-}
-
-int validate_bank_account(const char *account) {
-    int i;
-
-    if (strlen(account) < 8 || strlen(account) > 34) {
-        return -1;
-    }
-
-    for (i = 0; i < (int)strlen(account); i++) {
-        if (!isalnum((unsigned char)account[i])) {
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-/* isfinite() rejects "nan" and "inf", which scanf("%f") would otherwise accept. */
-int validate_basic_salary(float amount) {
-    if (!isfinite(amount) || amount <= 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int validate_allowance(float amount) {
-    if (!isfinite(amount) || amount < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int validate_overtime(float amount) {
-    if (!isfinite(amount) || amount < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int validate_bonuses(float amount) {
-    if (!isfinite(amount) || amount < 0) {
-        return -1;
-    }
-
-    return 0;
-}
 
 /* =====================================================================
                             SEARCH / DISPLAY
 ===================================================================== */
 
-// checking if id has already exists
-
-int id_exists(const char *id) {
-    int i;
-    for (i = 0; i < employee_count; i++) {
-        if (strcmpi(emp[i].id, id) == 0) {
-            return 1; // Duplicate found
-        }
-    }
-    return 0; // Unique
-}
 
 int search(char employid[]) {
     int i;
@@ -822,46 +472,6 @@ void display(char employid[]) {
     }
  }
 
-/* =====================================================================
-                            SAVE DATA
-===================================================================== */
-
-/* Rewrites the whole CSV from emp[]. Mode "w" erases the old file content first, so the header
-   and every record are written again. Called after every update and delete. */
-int savedata(void) {
-    FILE *fp;
-    int i;
-
-    fp = fopen(CSV_FILE, "w");
-
-    if (fp == NULL) {
-        printf("\nError! Could not save the changes to the file.\n");
-        return -1;
-    }
-
-    write_header(fp);
-
-    for (i = 0; i < employee_count; i++) {
-        fprintf(fp, "%s, %s, %s, %s, %s, %s, %s, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
-            emp[i].name,
-            emp[i].id,
-            emp[i].designation,
-            emp[i].department,
-            emp[i].email,
-            emp[i].date_joining,
-            emp[i].bank_name,
-            emp[i].bank_account,
-            emp[i].basic_salary,
-            emp[i].allowance,
-            emp[i].overtime_pay,
-            emp[i].bonuses,
-            emp[i].taxes,
-            emp[i].net_salary);
-    }
- 
-    fclose(fp);
-    return 1;
-}
 
 /* =====================================================================
                             DELETE EMPLOYEE
@@ -1127,68 +737,6 @@ void updateEmployee(void) {
                 printf("Invalid choice! No changes were made.\n");
         }
     } while (choice != 0);
-}
-
-/* =====================================================================
-                            LOAD DATA
-===================================================================== */
-
-/* Reads the CSV file into emp[] and sets employee_count. Every line is split with sscanf and CSV_FORMAT:
-   sscanf returns how many fields it filled, 14 means a complete, valid record. Anything else is
-   skipped (the header line and blank lines silently, damaged lines with a warning). */
-void load_data(void) {
-    FILE *fp;
-    char line[1024];
-    int matched, skipped = 0, i, blank;
-
-    employee_count = 0;
-
-    fp = fopen(CSV_FILE, "r");
-
-    if (fp == NULL) {
-        return;
-    }
-
-    while (fgets(line, sizeof(line), fp) != NULL && employee_count < Max_Employee) {
-        /* &emp[..].basic_salary etc.: numbers need the address (&), text arrays do not */
-        matched = sscanf(line, CSV_FORMAT,
-            emp[employee_count].name,
-            emp[employee_count].id,
-            emp[employee_count].designation,
-            emp[employee_count].department,
-            emp[employee_count].email,
-            emp[employee_count].date_joining,
-            emp[employee_count].bank_name,
-            emp[employee_count].bank_account,
-            &emp[employee_count].basic_salary,
-            &emp[employee_count].allowance,
-            &emp[employee_count].overtime_pay,
-            &emp[employee_count].bonuses,
-            &emp[employee_count].taxes,
-            &emp[employee_count].net_salary);
-
-        if (matched == 14) {
-            employee_count++;
-        } else {
-            /* Not a record. Blank lines and the header row are normal; anything else is a damaged line. */
-            blank = 1;
-
-            for (i = 0; line[i] != '\0'; i++) {
-                if (isspace((unsigned char)line[i]) == 0) {
-                    blank = 0;
-                    break;}
-            }
-            if (blank == 0 && strstr(line, "NAME,ID") == NULL) {
-                skipped++;}
-        }
-    }
-    fclose(fp);
-
-    if (skipped > 0) {
-        printf("\nWarning: %d line(s) in \"%s\" could not be read and were skipped.\n", skipped, CSV_FILE);
-        printf("They have the wrong number or order of fields. If you update or delete an employee,\n");
-        printf("those lines will be removed from the file, so fix or back up the file first.\n\n");
-    }
 }
 
 /* =====================================================================
